@@ -1,4 +1,3 @@
-
 import { supabase } from './client';
 
 export interface UserProfile {
@@ -7,7 +6,6 @@ export interface UserProfile {
     birthdate: Date | string;
     gender: string;
     onboarding_completed: boolean;
-    has_seen_welcome: boolean;
     goals?: string[];
     created_at?: string;
     updated_at?: string;
@@ -42,8 +40,7 @@ export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'u
             birthdate: birthdate,
             gender: profile.gender,
             onboarding_completed: profile.onboarding_completed,
-            goals: profile.goals || [],
-            has_seen_welcome: profile.has_seen_welcome
+            goals: profile.goals || []
         }, {
             onConflict: 'id'
         });

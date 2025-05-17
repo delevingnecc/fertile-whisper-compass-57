@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -33,8 +34,9 @@ const Home = () => {
           // Set user name from profile
           setUserName(profile.name);
 
-          // Check if the user has seen the welcome screen before
-          if (profile.has_seen_welcome) {
+          // Check if the user has seen the welcome screen before using localStorage instead
+          const hasVisitedChat = localStorage.getItem('hasVisitedChat') === 'true';
+          if (hasVisitedChat) {
             setShowWelcome(false);
             
             // Get or create a conversation
@@ -156,11 +158,12 @@ const Home = () => {
   const handleGetStarted = async () => {
     if (user) {
       try {
-        // Mark that the user has seen the welcome screen
-        await supabase
-          .from('user_profiles')
-          .update({ has_seen_welcome: true })
-          .eq('id', user.id);
+        // We're no longer updating has_seen_welcome in the database
+        // Instead, we'll rely solely on localStorage
+        // await supabase
+        //   .from('user_profiles')
+        //   .update({ has_seen_welcome: true })
+        //   .eq('id', user.id);
       } catch (error) {
         console.error('Error updating welcome screen status:', error);
       }

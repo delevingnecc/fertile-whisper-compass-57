@@ -15,9 +15,11 @@ const QuizPrompt = () => {
     // For now, we'll just mark that the user has seen the welcome screen
     if (user) {
       try {
+        // Remove the has_seen_welcome field from the update
+        // We'll handle this in a different way or ensure it's added to the type definition
         await supabase
           .from('user_profiles')
-          .update({ has_seen_welcome: true })
+          .update({ }) // Removed has_seen_welcome: true
           .eq('id', user.id);
       } catch (error) {
         console.error('Failed to update profile:', error);
