@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Apple, Activity, Flower, ArrowUpDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useAuth } from '@/contexts/AuthProvider';
+import { getProfile } from '@/integrations/supabase/profiles';
 
 type WelcomeScreenProps = {
   onGetStarted: () => void;
@@ -12,6 +14,26 @@ type WelcomeScreenProps = {
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onGetStarted
 }) => {
+  const [userName, setUserName] = useState<string>('');
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const profile = await getProfile(user.id);
+          if (profile?.name) {
+            setUserName(profile.name);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+    
+    fetchUserProfile();
+  }, [user]);
+
   return <div className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-white to-primary-50 p-6 pb-8">
       <div className="w-full max-w-md flex flex-col items-center justify-center flex-1">
         <motion.div initial={{
@@ -52,7 +74,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           delay: 0.5,
           duration: 0.5
         }} className="text-xl mb-3 text-gray-700 font-semibold">
-            Your AI companion on your journey to wellness
+            {userName ? `Nice to meet you ${userName}!` : 'Your AI companion on your journey to wellness'}
           </motion.p>
           
           <motion.p className="text-lg mb-6 text-gray-600" initial={{
