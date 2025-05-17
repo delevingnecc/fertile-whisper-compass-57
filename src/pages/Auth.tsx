@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 import AuthTest from '@/components/AuthTest';
+import { useAuth } from '@/contexts/AuthProvider';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -40,7 +41,9 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
+  const { user, isLoading } = useAuth();
+  const [authLoading, setAuthLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [showTests, setShowTests] = useState(false);
   
@@ -59,9 +62,22 @@ const Auth = () => {
       confirmPassword: ""
     }
   });
+
+  // If user is already authenticated, redirect to home
+  useEffect(() => {
+    if (!isLoading && user) {
+      console.log('[Auth] User already authenticated, redirecting to home');
+      // Use a timeout to ensure auth state is stable before navigating
+      const redirectTimeout = setTimeout(() => {
+        navigate('/');
+      }, 0);
+      
+      return () => clearTimeout(redirectTimeout);
+    }
+  }, [user, isLoading, navigate]);
   
   const handleLogin = async (values: LoginFormValues) => {
-    setIsLoading(true);
+    setAuthLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -77,6 +93,8 @@ const Auth = () => {
       // Check if user has completed onboarding using Supabase
       const onboardingComplete = await hasCompletedOnboarding(data.user.id);
 
+      console.log('[Auth] Login successful, redirecting based on onboarding status:', { onboardingComplete });
+      
       // Redirect to onboarding if not complete, otherwise to home
       if (onboardingComplete) {
         navigate("/");
@@ -90,12 +108,12 @@ const Auth = () => {
         description: error.message || "Please check your credentials and try again."
       });
     } finally {
-      setIsLoading(false);
+      setAuthLoading(false);
     }
   };
   
   const handleSignup = async (values: SignupFormValues) => {
-    setIsLoading(true);
+    setAuthLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
@@ -116,7 +134,7 @@ const Auth = () => {
         description: error.message || "Please try again later."
       });
     } finally {
-      setIsLoading(false);
+      setAuthLoading(false);
     }
   };
   
@@ -141,6 +159,18 @@ const Auth = () => {
       setSocialLoading(null);
     }
   };
+  
+  // If already logged in, don't show auth form
+  if (!isLoading && user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+          <p className="mb-4">You are already logged in!</p>
+          <Button onClick={() => navigate('/')}>Go to Home</Button>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
@@ -210,8 +240,8 @@ const Auth = () => {
                         <FormMessage />
                       </FormItem>} />
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Logging in..." : "Login"}
+                    <Button type="submit" className="w-full" disabled={authLoading}>
+                      {authLoading ? "Logging in..." : "Login"}
                     </Button>
 
                     <div className="relative my-6">
@@ -273,8 +303,8 @@ const Auth = () => {
                         <FormMessage />
                       </FormItem>} />
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Creating account..." : "Create account"}
+                    <Button type="submit" className="w-full" disabled={authLoading}>
+                      {authLoading ? "Creating account..." : "Create account"}
                     </Button>
 
                     <div className="relative my-6">

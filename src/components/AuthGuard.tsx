@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -15,11 +16,17 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Skip check if we're already on the auth page to prevent redirect loops
+    if (location.pathname === '/auth') {
+      return;
+    }
+    
     // Check authentication status first
     if (isLoading) return;
 
     // If user is not authenticated, redirect to auth page
     if (!user) {
+      console.log('[AuthGuard] User not authenticated, redirecting to /auth');
       navigate('/auth');
       return;
     }
@@ -35,7 +42,10 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           setOnboardingComplete(completed);
 
           if (!completed) {
+            console.log('[AuthGuard] Onboarding not complete, redirecting to /onboarding');
             navigate('/onboarding');
+          } else {
+            console.log('[AuthGuard] Authentication and onboarding complete, allowing access');
           }
         } catch (error) {
           console.error('Error checking onboarding status:', error);

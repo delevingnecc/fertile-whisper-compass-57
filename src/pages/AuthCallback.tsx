@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -19,16 +20,23 @@ const AuthCallback = () => {
             try {
                 // Check if user is authenticated
                 if (!user) {
+                    console.log('[AuthCallback] No user found after auth callback');
                     throw new Error("Authentication failed");
                 }
+
+                console.log('[AuthCallback] User authenticated, checking onboarding status');
 
                 // Check if user has already completed onboarding
                 const completed = await hasCompletedOnboarding(user.id);
 
+                console.log('[AuthCallback] Onboarding status:', { completed });
+
                 // Decide where to redirect
                 if (!completed) {
+                    console.log('[AuthCallback] Redirecting to onboarding');
                     navigate('/onboarding');
                 } else {
+                    console.log('[AuthCallback] Redirecting to home');
                     navigate('/');
                 }
 
@@ -37,7 +45,7 @@ const AuthCallback = () => {
                     description: "You've been successfully authenticated."
                 });
             } catch (error) {
-                console.error('Auth callback error:', error);
+                console.error('[AuthCallback] Auth callback error:', error);
                 toast({
                     variant: "destructive",
                     title: "Authentication Failed",
