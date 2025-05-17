@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MessageType } from "@/components/ChatMessage";
-import { v4 as uuidv4 } from "@supabase/supabase-js/dist/module/lib/helpers";
+import { useAuth } from "@/contexts/AuthProvider";
 
 // Types for our database entities
 export interface Conversation {
@@ -13,10 +13,14 @@ export interface Conversation {
 
 // Create a new conversation
 export const createConversation = async (title?: string): Promise<string> => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) throw new Error("User not authenticated");
+  
   const { data, error } = await supabase
     .from('conversations')
     .insert({
       title: title || `Conversation ${new Date().toLocaleString()}`,
+      user_id: userData.user.id
     })
     .select('id')
     .single();
@@ -31,9 +35,13 @@ export const createConversation = async (title?: string): Promise<string> => {
 
 // Get all conversations for the current user
 export const getConversations = async (): Promise<Conversation[]> => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) throw new Error("User not authenticated");
+  
   const { data, error } = await supabase
     .from('conversations')
     .select('*')
+    .eq('user_id', userData.user.id)
     .order('updated_at', { ascending: false });
 
   if (error) {
@@ -50,10 +58,14 @@ export const getConversations = async (): Promise<Conversation[]> => {
 
 // Get messages for a specific conversation
 export const getMessages = async (conversationId: string): Promise<MessageType[]> => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) throw new Error("User not authenticated");
+  
   const { data, error } = await supabase
     .from('chat_messages')
     .select('*')
     .eq('conversation_id', conversationId)
+    .eq('user_id', userData.user.id)
     .order('created_at');
 
   if (error) {
@@ -64,7 +76,7 @@ export const getMessages = async (conversationId: string): Promise<MessageType[]
   return data.map(message => ({
     id: message.id,
     content: message.content,
-    sender: message.sender,
+    sender: message.sender as 'user' | 'ai',
     timestamp: new Date(message.created_at)
   }));
 };
@@ -75,10 +87,14 @@ export const saveMessage = async (
   content: string, 
   sender: 'user' | 'ai'
 ): Promise<MessageType> => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) throw new Error("User not authenticated");
+  
   const newMessage = {
     conversation_id: conversationId,
     content,
-    sender
+    sender,
+    user_id: userData.user.id
   };
 
   const { data, error } = await supabase
@@ -95,7 +111,7 @@ export const saveMessage = async (
   return {
     id: data.id,
     content: data.content,
-    sender: data.sender,
+    sender: data.sender as 'user' | 'ai',
     timestamp: new Date(data.created_at)
   };
 };
