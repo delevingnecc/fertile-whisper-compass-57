@@ -183,9 +183,10 @@ const Home = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-screen bg-white">
       <div 
         className={`flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden`}
+        style={{ height: 'calc(100vh - 128px)' }} // Adjust for header and bottom navigation
       >
         <div className="max-w-lg mx-auto">
           {messages.map((message) => (
