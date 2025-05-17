@@ -4,10 +4,11 @@ import ChatInput from '@/components/ChatInput';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getProfile } from '@/integrations/supabase/profiles';
-import { createConversation, getMessages } from '@/services/chatService';
+import { createConversation, getMessages, saveMessage } from '@/services/chatService';
 import { sendMessageToWebhook } from '@/services/webhookService';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+
 const Home = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,12 +18,10 @@ const Home = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const {
-    user
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
+
   useEffect(() => {
     if (!user) return;
     const fetchUserProfile = async () => {
@@ -58,6 +57,7 @@ const Home = () => {
     };
     fetchUserProfile();
   }, [user, toast]);
+
   const loadMessages = async (convId: string) => {
     try {
       setIsLoading(true);
@@ -65,16 +65,12 @@ const Home = () => {
 
       // If no messages found, add a welcome message
       if (chatMessages.length === 0) {
-        const welcomeMessage: MessageType = {
-          id: 'welcome',
-          content: `Hello! I'm Eve, your fertility companion. How are you feeling today?`,
-          sender: 'ai',
-          timestamp: new Date()
-        };
-        setMessages([welcomeMessage]);
-
-        // Save welcome message to database
-        await sendMessageToWebhook('', convId);
+        const welcomeMessage = `Hello! I'm Eve, your fertility companion. How are you feeling today?`;
+        
+        // Save welcome message to database directly
+        const savedMessage = await saveMessage(convId, welcomeMessage, 'ai');
+        
+        setMessages([savedMessage]);
       } else {
         setMessages(chatMessages);
       }
@@ -89,23 +85,20 @@ const Home = () => {
       setIsLoading(false);
     }
   };
+
   const initializeNewConversation = async () => {
     try {
       const newConversationId = await createConversation();
       setConversationId(newConversationId);
       localStorage.setItem('currentConversationId', newConversationId);
 
-      // Add welcome message
-      const welcomeMessage: MessageType = {
-        id: 'welcome',
-        content: `Hello! I'm Eve, your fertility companion. How are you feeling today?`,
-        sender: 'ai',
-        timestamp: new Date()
-      };
-      setMessages([welcomeMessage]);
-
-      // No need to save welcome message here, it will be added
-      // when user sends their first message
+      // Create welcome message and save it directly to the database
+      const welcomeMessage = `Hello! I'm Eve, your fertility companion. How are you feeling today?`;
+      const savedMessage = await saveMessage(newConversationId, welcomeMessage, 'ai');
+      
+      // Set the saved message to state
+      setMessages([savedMessage]);
+      
     } catch (error) {
       console.error('Error creating conversation:', error);
       toast({
@@ -115,14 +108,17 @@ const Home = () => {
       });
     }
   };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
       behavior: 'smooth'
     });
   };
+
   const handleSendMessage = async (content: string) => {
     if (!conversationId) return;
     const newUserMessage: MessageType = {
@@ -155,6 +151,7 @@ const Home = () => {
       setIsLoading(false);
     }
   };
+
   const handleGetStarted = async () => {
     // Mark that the user has visited the chat before
     localStorage.setItem('hasVisitedChat', 'true');
@@ -163,9 +160,11 @@ const Home = () => {
     // Initialize a new conversation
     await initializeNewConversation();
   };
+
   if (showWelcome) {
     return <WelcomeScreen onGetStarted={handleGetStarted} />;
   }
+
   return <div className="flex flex-col h-screen bg-white">
       <div className={`flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden`} style={{
       height: 'calc(100vh - 128px)'
@@ -193,4 +192,5 @@ const Home = () => {
       </div>
     </div>;
 };
+
 export default Home;
