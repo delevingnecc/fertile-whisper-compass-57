@@ -29,6 +29,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled }) => {
       style={{ 
         boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
         paddingBottom: '16px',
+        marginBottom: '16px',
       }}
     >
       <Input
