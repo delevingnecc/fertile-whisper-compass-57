@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/components/ui/use-toast';
 import { upsertProfile } from '@/integrations/supabase/profiles';
@@ -14,10 +14,8 @@ import { upsertProfile } from '@/integrations/supabase/profiles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CalendarIcon, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Define gender options
@@ -37,15 +35,31 @@ const nonBinaryOptions = [
     { value: 'other', label: 'Other' }
 ];
 
+// Date formatter and parser
+const formatDateString = (date: Date) => {
+  return format(date, 'dd/MM/yyyy');
+};
+
+const parseDateString = (dateString: string): Date | null => {
+  if (!dateString) return null;
+  
+  const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+  return isValid(parsedDate) ? parsedDate : null;
+};
+
 // Define form schema
 const nameSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
 });
 
+// Update the birthdate schema to handle string input
 const birthdateSchema = z.object({
-  birthdate: z.date({
-    required_error: "Please select a date",
-  }),
+  birthdate: z.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, { message: 'Date must be in dd/mm/yyyy format' })
+    .refine((date) => {
+      const parsedDate = parseDateString(date);
+      return parsedDate && parsedDate <= new Date() && parsedDate > new Date('1900-01-01');
+    }, { message: 'Please enter a valid date between 1900 and today' }),
 });
 
 const genderSchema = z.object({
@@ -55,9 +69,12 @@ const genderSchema = z.object({
 // Combined schema for final submission
 const onboardingSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-  birthdate: z.date({
-    required_error: "Please select a date",
-  }),
+  birthdate: z.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, { message: 'Date must be in dd/mm/yyyy format' })
+    .refine((date) => {
+      const parsedDate = parseDateString(date);
+      return parsedDate && parsedDate <= new Date() && parsedDate > new Date('1900-01-01');
+    }, { message: 'Please enter a valid date between 1900 and today' }),
   gender: z.string().min(1, { message: 'Please select a gender option' }),
 });
 
@@ -77,7 +94,7 @@ const Onboarding = () => {
         defaultValues: {
             name: '',
             gender: '',
-            birthdate: undefined,
+            birthdate: '',
         },
         mode: 'onChange',
     });
@@ -160,11 +177,19 @@ const Onboarding = () => {
 
         try {
             console.log(`[DEBUG] Attempting to save profile for user:`, user.id);
+            
+            // Parse the date string to a Date object for database storage
+            const parsedDate = parseDateString(values.birthdate);
+            
+            if (!parsedDate) {
+                throw new Error("Invalid date format");
+            }
+            
             // Save user profile data to Supabase
             await upsertProfile({
                 id: user.id,
                 name: values.name,
-                birthdate: values.birthdate,
+                birthdate: parsedDate,
                 gender: values.gender,
                 onboarding_completed: true
             });
@@ -172,7 +197,7 @@ const Onboarding = () => {
             console.log(`[DEBUG] Profile successfully saved`);
             toast({
                 title: "Onboarding complete!",
-                description: "Welcome to FertilityPal, " + values.name + "!"
+                description: "Welcome to Genesis, " + values.name + "!"
             });
 
             // Redirect to home page
@@ -214,7 +239,7 @@ const Onboarding = () => {
     });
 
     return (
-        <div className="min-h-screen flex flex-col bg-white">
+        <div className="fixed inset-0 w-full h-full min-h-screen flex flex-col bg-white overflow-auto">
             {/* Subtle pattern top and bottom */}
             <div className="absolute top-0 left-0 w-full h-12 bg-primary-50/30 z-0" />
             
@@ -224,7 +249,7 @@ const Onboarding = () => {
                 <div className="flex justify-start">
                     <img
                         src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png"
-                        alt="FertilityPal"
+                        alt="Genesis"
                         className="h-10 w-auto"
                     />
                 </div>
@@ -244,7 +269,7 @@ const Onboarding = () => {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-auto">
                     <AnimatePresence mode="wait">
                         {step === 1 && (
                             <motion.div
@@ -253,7 +278,7 @@ const Onboarding = () => {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="flex-1 flex flex-col px-6 pt-8"
+                                className="flex-1 flex flex-col px-6 pt-8 overflow-auto"
                             >
                                 <div className="mb-8">
                                     <h1 className="text-3xl font-bold mb-2">{headers[1].title}</h1>
@@ -299,7 +324,7 @@ const Onboarding = () => {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="flex-1 flex flex-col px-6 pt-8"
+                                className="flex-1 flex flex-col px-6 pt-8 overflow-auto"
                             >
                                 <div className="mb-8">
                                     <button
@@ -319,37 +344,17 @@ const Onboarding = () => {
                                     name="birthdate"
                                     render={({ field }) => (
                                         <FormItem className="mb-4">
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "w-full py-6 px-4 text-left justify-between text-lg rounded-xl border-gray-300",
-                                                                !field.value && "text-gray-400"
-                                                            )}
-                                                        >
-                                                            {field.value ? (
-                                                                format(field.value, "MMMM d, yyyy")
-                                                            ) : (
-                                                                <span>Select your birthday</span>
-                                                            )}
-                                                            <CalendarIcon className="ml-auto h-5 w-5 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        onSelect={field.onChange}
-                                                        disabled={(date) =>
-                                                            date > new Date() || date < new Date("1900-01-01")
-                                                        }
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <FormLabel className="text-base text-gray-700">Your birthday</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="DD/MM/YYYY"
+                                                    className="text-lg py-6 px-4 rounded-xl border-gray-300"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                Please enter in format: DD/MM/YYYY
+                                            </p>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -375,7 +380,7 @@ const Onboarding = () => {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="flex-1 flex flex-col px-6 pt-8"
+                                className="flex-1 flex flex-col px-6 pt-8 overflow-auto"
                             >
                                 <div className="mb-8">
                                     <button
