@@ -200,6 +200,7 @@ const Home = () => {
               key={message.id}
               message={message}
               assistantName={assistantName}
+              userName={userName}
             />
           ))}
           {isLoading && (
