@@ -41,7 +41,7 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const [authLoading, setAuthLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [anonymousLoading, setAnonymousLoading] = useState(false);
@@ -223,7 +223,10 @@ const Auth = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
         <div className="bg-white p-8 rounded-lg shadow-lg text-center">
           <p className="mb-4">You are already logged in!</p>
-          <Button onClick={() => navigate('/')}>Go to Home</Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button onClick={() => navigate('/')}>Go to Home</Button>
+            <Button variant="outline" onClick={signOut}>Sign out</Button>
+          </div>
         </div>
       </div>
     );

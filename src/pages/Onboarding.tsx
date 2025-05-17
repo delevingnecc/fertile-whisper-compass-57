@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -278,7 +279,7 @@ const Onboarding = () => {
                                     )}
                                 />
 
-                                <div className="mt-auto pt-6 pb-10">
+                                <div className="mt-auto pt-6 pb-10 mb-4">
                                     <Button
                                         type="button"
                                         onClick={nextStep}
@@ -354,7 +355,7 @@ const Onboarding = () => {
                                     )}
                                 />
 
-                                <div className="mt-auto pt-6 pb-10">
+                                <div className="mt-auto pt-6 pb-10 mb-4">
                                     <Button
                                         type="button"
                                         onClick={nextStep}
@@ -470,7 +471,7 @@ const Onboarding = () => {
                                     )}
                                 />
 
-                                <div className="mt-auto pt-6 pb-10">
+                                <div className="mt-auto pt-6 pb-10 mb-4">
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting}
