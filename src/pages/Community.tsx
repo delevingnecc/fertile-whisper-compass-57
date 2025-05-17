@@ -1,14 +1,17 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, ThumbsUp, Bookmark } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Bookmark, PenSquare } from 'lucide-react';
 
 const Community = () => {
+  const navigate = useNavigate();
+  
   const topicGroups = [
     {
       category: "Popular Topics",
@@ -81,6 +84,10 @@ const Community = () => {
     }
   ];
 
+  const handleNewPost = () => {
+    navigate('/community/new-post');
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Header title="Community" />
@@ -97,8 +104,8 @@ const Community = () => {
             <TabsContent value="discussions" className="space-y-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">Recent Discussions</h3>
-                <Button variant="outline" size="sm">
-                  <MessageSquare className="h-4 w-4 mr-2" /> New Post
+                <Button variant="outline" size="sm" onClick={handleNewPost}>
+                  <PenSquare className="h-4 w-4 mr-2" /> New Post
                 </Button>
               </div>
               
