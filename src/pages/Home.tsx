@@ -16,7 +16,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [assistantName] = useState('Eve');
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState('Anonymous User');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -26,14 +26,21 @@ const Home = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Prevent multiple initializations
+    // Prevent multiple initializations and ensure user exists
     if (!user || initRef.current) return;
     
     const fetchUserProfile = async () => {
       try {
         initRef.current = true;
         console.log('Fetching user profile for:', user.id);
-        const profile = await getProfile(user.id);
+        
+        // Check if user is anonymous to decide if we should create a default profile
+        const isAnonymous = user.app_metadata?.is_anonymous || 
+                            user.email?.includes('@anonymous.user');
+        
+        // Get profile, create a default one for anonymous users if it doesn't exist
+        const profile = await getProfile(user.id, isAnonymous);
+        
         if (profile) {
           setUserName(profile.name);
 
@@ -56,19 +63,33 @@ const Home = () => {
               await initializeNewConversation();
             }
           }
+        } else if (isAnonymous) {
+          // This shouldn't happen as we're creating profiles for anonymous users
+          // but just in case, create a new conversation
+          setShowWelcome(false);
+          await initializeNewConversation();
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load user profile',
-          variant: 'destructive'
-        });
+        
+        // More graceful error handling - don't show error toast repeatedly
+        // Just try to initialize a conversation if we can
+        if (!conversationId) {
+          setShowWelcome(false);
+          initializeNewConversation().catch(err => {
+            console.error('Failed to initialize conversation after profile fetch error:', err);
+            toast({
+              title: 'Error',
+              description: 'Failed to start a conversation',
+              variant: 'destructive'
+            });
+          });
+        }
       }
     };
     
     fetchUserProfile();
-  }, [user, toast]);
+  }, [user, toast, conversationId]);
 
   const loadMessages = async (convId: string) => {
     try {

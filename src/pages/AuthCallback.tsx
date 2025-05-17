@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
-import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
+import { getProfile, hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 
 const AuthCallback = () => {
     const { user, isLoading } = useAuth();
@@ -25,8 +25,20 @@ const AuthCallback = () => {
                     throw new Error("Authentication failed");
                 }
 
-                console.log('[AuthCallback] User authenticated, checking onboarding status');
-
+                console.log('[AuthCallback] User authenticated, checking if anonymous user');
+                
+                // Check if user is anonymous
+                const isAnonymous = user.app_metadata?.is_anonymous || 
+                                    user.email?.includes('@anonymous.user');
+                
+                console.log('[AuthCallback] User type:', isAnonymous ? 'anonymous' : 'registered');
+                
+                // For anonymous users, we'll check and create a profile if needed
+                if (isAnonymous) {
+                    // Try to get or create a profile for anonymous users
+                    await getProfile(user.id, true);
+                }
+                
                 // Check if user has already completed onboarding
                 const completed = await hasCompletedOnboarding(user.id);
                 
