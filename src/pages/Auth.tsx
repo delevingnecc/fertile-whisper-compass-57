@@ -13,7 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
-
 const loginSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address"
@@ -22,7 +21,6 @@ const loginSchema = z.object({
     message: "Password must be at least 6 characters"
   })
 });
-
 const signupSchema = loginSchema.extend({
   confirmPassword: z.string().min(6, {
     message: "Password must be at least 6 characters"
@@ -31,10 +29,8 @@ const signupSchema = loginSchema.extend({
   message: "Passwords don't match",
   path: ["confirmPassword"]
 });
-
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
-
 const Auth = () => {
   const {
     toast
@@ -42,7 +38,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -50,7 +45,6 @@ const Auth = () => {
       password: ""
     }
   });
-  
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -59,7 +53,6 @@ const Auth = () => {
       confirmPassword: ""
     }
   });
-  
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
@@ -86,7 +79,6 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-  
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
     try {
@@ -115,7 +107,6 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-  
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     try {
@@ -140,7 +131,6 @@ const Auth = () => {
       setSocialLoading(null);
     }
   };
-  
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
       <motion.div initial={{
       opacity: 0,
@@ -209,31 +199,15 @@ const Auth = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Google Sign-In Button - Following Brand Guidelines */}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleSocialLogin('google')} 
-                    disabled={!!socialLoading} 
-                    className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300 flex items-center justify-center gap-2"
-                  >
-                    <img 
-                      src="/lovable-uploads/551a6746-11e9-4669-9d6e-133ec8b8e6b4.png" 
-                      alt="Google logo" 
-                      className="w-5 h-5 mr-1" 
-                    />
-                    <span>Google</span>
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('google')} disabled={!!socialLoading} className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300 flex items-center justify-center gap-2">
+                    <img src="/lovable-uploads/551a6746-11e9-4669-9d6e-133ec8b8e6b4.png" alt="Google logo" className="w-5 h-5 mr-1" />
+                    <span>Sign in with Google</span>
                   </Button>
                   
                   {/* Apple Sign-In Button - Following Brand Guidelines */}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleSocialLogin('apple')} 
-                    disabled={!!socialLoading} 
-                    className="w-full bg-black hover:bg-gray-900 text-white border-black"
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('apple')} disabled={!!socialLoading} className="w-full bg-black hover:bg-gray-900 text-white border-black">
                     <FontAwesomeIcon icon={faApple} className="mr-2 h-4 w-4" />
-                    <span>Apple</span>
+                    <span>Sign in with Apple</span>
                   </Button>
                 </div>
               </form>
@@ -288,29 +262,13 @@ const Auth = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Google Sign-In Button - Following Brand Guidelines */}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleSocialLogin('google')} 
-                    disabled={!!socialLoading} 
-                    className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300 flex items-center justify-center gap-2"
-                  >
-                    <img 
-                      src="/lovable-uploads/551a6746-11e9-4669-9d6e-133ec8b8e6b4.png" 
-                      alt="Google logo" 
-                      className="w-5 h-5 mr-1" 
-                    />
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('google')} disabled={!!socialLoading} className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300 flex items-center justify-center gap-2">
+                    <img src="/lovable-uploads/551a6746-11e9-4669-9d6e-133ec8b8e6b4.png" alt="Google logo" className="w-5 h-5 mr-1" />
                     <span>Google</span>
                   </Button>
                   
                   {/* Apple Sign-In Button - Following Brand Guidelines */}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleSocialLogin('apple')} 
-                    disabled={!!socialLoading} 
-                    className="w-full bg-black hover:bg-gray-900 text-white border-black"
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('apple')} disabled={!!socialLoading} className="w-full bg-black hover:bg-gray-900 text-white border-black">
                     <FontAwesomeIcon icon={faApple} className="mr-2 h-4 w-4" />
                     <span>Apple</span>
                   </Button>
@@ -322,5 +280,4 @@ const Auth = () => {
       </motion.div>
     </div>;
 };
-
 export default Auth;
