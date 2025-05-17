@@ -71,8 +71,8 @@ const Home = () => {
       const aiResponses = [
         'I understand how you feel. Fertility journeys can be complex.',
         'That\'s a great question! Let me help you understand your cycle better.',
-        'I'm here to support you every step of the way.',
-        'Based on the information you've shared, I'd recommend tracking these symptoms.',
+        'I\'m here to support you every step of the way.',
+        'Based on the information you\'ve shared, I\'d recommend tracking these symptoms.',
         'Would you like me to remind you about your upcoming appointments?'
       ];
       
