@@ -25,7 +25,7 @@ const Products = () => {
       rating: 4.7,
       reviewCount: 218,
       price: 45.99,
-      image: "/products/vitamins.png",
+      image: "/lovable-uploads/d4e1a544-3eca-4361-bf8c-d42c0eef3da1.png",
       description: "Complete multivitamin formulated specifically for hormone balance and fertility support.",
       tags: ["Hormone Support", "Bestseller"]
     },
@@ -108,9 +108,17 @@ const Products = () => {
                         <Card key={product.id} className="overflow-hidden">
                           <div className="flex">
                             <div className="w-1/3 bg-gray-100 flex items-center justify-center">
-                              <div className="h-24 w-24 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
-                                {product.name.charAt(0)}
-                              </div>
+                              {product.id === 1 ? (
+                                <img 
+                                  src={product.image} 
+                                  alt={product.name}
+                                  className="h-24 w-24 object-contain"
+                                />
+                              ) : (
+                                <div className="h-24 w-24 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
+                                  {product.name.charAt(0)}
+                                </div>
+                              )}
                             </div>
                             <div className="w-2/3">
                               <CardHeader className="p-3 pb-1">
