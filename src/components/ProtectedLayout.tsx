@@ -1,8 +1,6 @@
-
-import { ReactNode, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ReactNode, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 import { useToast } from "@/components/ui/use-toast";
 
 interface ProtectedLayoutProps {
@@ -10,53 +8,51 @@ interface ProtectedLayoutProps {
 }
 
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
-  const { user, isLoading } = useAuth();
+  const { user, userProfile, isLoading, isProfileLoading } = useAuth();
   const navigate = useNavigate();
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
+  const location = useLocation();
   const { toast } = useToast();
-  const [initialized, setInitialized] = useState(false);
 
-  // Only run this effect once on initial mount
   useEffect(() => {
-    const checkAuth = async () => {
-      // If still loading auth state, wait
-      if (isLoading) return;
+    console.log("ProtectedLayout: Effect triggered", {
+      isLoading,
+      isProfileLoading,
+      user: user?.id,
+      onboardingComplete: userProfile?.onboarding_completed,
+      pathname: location.pathname
+    });
 
-      // If no authenticated user, redirect to auth
-      if (!user) {
-        console.log("ProtectedLayout: No authenticated user, redirecting to /auth");
+    if (isLoading || isProfileLoading) {
+      console.log("ProtectedLayout: Still loading auth or profile data.");
+      return;
+    }
+
+    if (!user) {
+      console.log("ProtectedLayout: No authenticated user, redirecting to /auth");
+      if (location.pathname !== '/auth' && location.pathname !== '/auth/callback') {
         navigate('/auth', { replace: true });
-        return;
       }
+      return;
+    }
 
-      // Check onboarding status only for authenticated users
-      try {
-        setIsCheckingOnboarding(true);
-        const completed = await hasCompletedOnboarding(user.id);
-        
-        if (!completed) {
-          console.log("ProtectedLayout: Onboarding not complete, redirecting to /onboarding");
-          navigate('/onboarding', { replace: true });
-        }
-      } catch (error) {
-        console.error('ProtectedLayout: Error checking onboarding status:', error);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "There was a problem verifying your account setup."
-        });
-        navigate('/onboarding', { replace: true });
-      } finally {
-        setIsCheckingOnboarding(false);
-        setInitialized(true);
-      }
-    };
+    if (user && userProfile && !userProfile.onboarding_completed && location.pathname !== '/onboarding') {
+      console.log("ProtectedLayout: User authenticated but onboarding not complete, redirecting to /onboarding");
+      navigate('/onboarding', { replace: true });
+      return;
+    }
 
-    checkAuth();
-  }, [isLoading, user, navigate]);
+    if (user && userProfile && userProfile.onboarding_completed && location.pathname === '/onboarding') {
+      console.log("ProtectedLayout: User onboarded but on /onboarding page, redirecting to /");
+      navigate('/', { replace: true });
+      return;
+    }
 
-  // Show loading state only during initial check
-  if (isLoading || (user && isCheckingOnboarding && !initialized)) {
+    console.log("ProtectedLayout: All checks passed for path:", location.pathname);
+
+  }, [user, userProfile, isLoading, isProfileLoading, navigate, location.pathname, toast]);
+
+  if (isLoading || (user && isProfileLoading)) {
+    console.log("ProtectedLayout: Showing loading spinner", { isLoading, isProfileLoading, userId: user?.id });
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -64,8 +60,13 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
     );
   }
 
-  // Only render children when properly authenticated and onboarded
-  return user ? <>{children}</> : null;
+  if (!user) {
+    console.log("ProtectedLayout: Render null because no user after loading checks.");
+    return null;
+  }
+
+  console.log("ProtectedLayout: Rendering children for path:", location.pathname);
+  return <>{children}</>;
 };
 
 export default ProtectedLayout;

@@ -1,14 +1,17 @@
-
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { getProfile, UserProfile } from '@/integrations/supabase/profiles';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  userProfile: UserProfile | null;
   isLoading: boolean;
+  isProfileLoading: boolean;
   signOut: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,120 +19,167 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [initialAuthCheckComplete, setInitialAuthCheckComplete] = useState(false);
   const { toast } = useToast();
-  
-  // Use a ref to track if we've shown a toast for the current session
-  // This prevents repeated toasts when the component re-renders
   const sessionIdRef = useRef<string | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
-    console.log("AuthProvider: Setting up auth state listener");
-    
-    // Cleanup function to prevent memory leaks
+    isMounted.current = true;
     return () => {
-      console.log("AuthProvider: Cleaning up");
       isMounted.current = false;
     };
   }, []);
 
-  // Initial session check and auth state listener setup - only run once
-  useEffect(() => {
-    let mounted = true;
-    
-    // First, check for existing session
-    const checkSession = async () => {
-      try {
-        console.log("AuthProvider: Checking for existing session");
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("AuthProvider: Existing session:", currentSession?.user?.id || "none");
-        
-        if (mounted) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          
-          // Store the session ID in our ref to prevent showing toast on initial load
-          if (currentSession?.user) {
-            sessionIdRef.current = currentSession.user.id;
-          }
-        }
-      } catch (error) {
-        console.error("AuthProvider: Error checking session:", error);
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-          setInitialCheckComplete(true);
-        }
+  const fetchUserProfile = useCallback(async (currentUser: User | null) => {
+    if (!currentUser) {
+      if (isMounted.current) {
+        setUserProfile(null);
+        setIsProfileLoading(false);
       }
-    };
-    
-    checkSession();
+      return;
+    }
 
-    // Set up auth state listener AFTER checking the initial session
+    console.log("AuthProvider: Fetching user profile for", currentUser.id);
+    if (isMounted.current) setIsProfileLoading(true);
+
+    try {
+      const profile = await getProfile(currentUser.id);
+      if (isMounted.current) {
+        setUserProfile(profile);
+        console.log("AuthProvider: User profile fetched:", profile);
+      }
+    } catch (error) {
+      console.error("AuthProvider: Error in fetchUserProfile:", error);
+      if (isMounted.current) {
+        setUserProfile(null);
+      }
+      if (isMounted.current && !(error instanceof Error && error.message.includes("PGRST116"))) {
+        toast({
+          title: "Profile Error",
+          description: "Could not load your profile information.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsProfileLoading(false);
+      }
+    }
+  }, [toast]);
+
+  const refreshUserProfile = useCallback(async () => {
+    if (user) {
+      await fetchUserProfile(user);
+    }
+  }, [user, fetchUserProfile]);
+
+  useEffect(() => {
+    if (!isMounted.current) return;
+
+    setIsLoading(true);
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (!isMounted.current) return;
+      console.log("AuthProvider: Initial session:", currentSession?.user?.id || "none");
+      setSession(currentSession);
+      const currentAuthUser = currentSession?.user ?? null;
+      setUser(currentAuthUser);
+      setInitialAuthCheckComplete(true);
+
+      if (currentAuthUser) {
+        await fetchUserProfile(currentAuthUser);
+      } else {
+        if (isMounted.current) setIsProfileLoading(false);
+      }
+      if (isMounted.current) setIsLoading(false);
+    }).catch(error => {
+      if (isMounted.current) {
+        console.error("AuthProvider: Error in initial getSession:", error);
+        setIsLoading(false);
+        setIsProfileLoading(false);
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
+        if (!isMounted.current) return;
         console.log("AuthProvider: Auth state changed:", event, newSession?.user?.id);
-        
-        // Only process events if we're still mounted
-        if (!mounted) return;
-        
-        // Get the new session ID
-        const newSessionId = newSession?.user?.id || null;
-        
-        // If this is a real auth event and not just a refresh
-        if (initialCheckComplete) {
-          // Handle sign out event
-          if (event === 'SIGNED_OUT') {
-            toast({
-              title: "Signed out",
-              description: "You have been signed out successfully.",
-            });
-            setSession(null);
-            setUser(null);
-            sessionIdRef.current = null;
-          } 
-          // Handle sign in event - only if it's a new session
-          else if (event === 'SIGNED_IN' && newSessionId && newSessionId !== sessionIdRef.current) {
-            toast({
-              title: "Signed in",
-              description: "You have been signed in successfully.",
-            });
-            setSession(newSession);
-            setUser(newSession?.user ?? null);
-            sessionIdRef.current = newSessionId;
+
+        setSession(newSession);
+        const newAuthUser = newSession?.user ?? null;
+        setUser(newAuthUser);
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') setIsLoading(true);
+
+        if (event === 'SIGNED_IN') {
+          if (newAuthUser) {
+            if (newAuthUser.id !== sessionIdRef.current || !userProfile) {
+              if (newAuthUser.id !== sessionIdRef.current) {
+                toast({ title: "Signed in", description: "You have been signed in successfully." });
+              }
+              sessionIdRef.current = newAuthUser.id;
+              await fetchUserProfile(newAuthUser);
+            } else {
+              if (isMounted.current) setIsProfileLoading(false);
+            }
+          } else {
+            if (isMounted.current) {
+              setUserProfile(null);
+              setIsProfileLoading(false);
+              sessionIdRef.current = null;
+            }
           }
-          // For token refreshes and other events, update state without toast
-          else if (newSession !== session) {
-            setSession(newSession);
-            setUser(newSession?.user ?? null);
-            if (newSessionId) {
-              sessionIdRef.current = newSessionId;
+        } else if (event === 'SIGNED_OUT') {
+          toast({ title: "Signed out", description: "You have been signed out successfully." });
+          if (isMounted.current) {
+            setUserProfile(null);
+            setIsProfileLoading(false);
+            sessionIdRef.current = null;
+          }
+        } else if (event === 'USER_UPDATED' && newAuthUser) {
+          console.log("AuthProvider: User updated, refreshing profile.");
+          await fetchUserProfile(newAuthUser);
+        } else if (event === 'TOKEN_REFRESHED' && newAuthUser && !userProfile && !isProfileLoading) {
+          console.log("AuthProvider: Token refreshed, user exists but profile missing. Refetching.");
+          await fetchUserProfile(newAuthUser);
+        } else if (event === 'INITIAL_SESSION') {
+          if (newAuthUser && (!userProfile || newAuthUser.id !== sessionIdRef.current)) {
+            sessionIdRef.current = newAuthUser.id;
+            await fetchUserProfile(newAuthUser);
+          } else if (!newAuthUser) {
+            if (isMounted.current) {
+              setUserProfile(null);
+              setIsProfileLoading(false);
+              sessionIdRef.current = null;
             }
           }
         }
+
+        if (initialAuthCheckComplete && isMounted.current) {
+          setIsLoading(false);
+        }
       }
     );
-    
+
     return () => {
       console.log("AuthProvider: Unsubscribing from auth state changes");
-      mounted = false;
       subscription.unsubscribe();
     };
-  }, [toast, initialCheckComplete]); // Remove session from dependencies
+  }, [toast, fetchUserProfile]);
 
   const signOut = useCallback(async () => {
     try {
       console.log("AuthProvider: Signing out");
-      await supabase.auth.signOut();
-      console.log("AuthProvider: Successfully signed out");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error) {
       console.error("AuthProvider: Error signing out:", error);
       toast({
         variant: "destructive",
         title: "Sign out failed",
-        description: "An error occurred while signing out."
+        description: (error instanceof Error ? error.message : "An error occurred while signing out."),
       });
     }
   }, [toast]);
@@ -137,8 +187,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const value = {
     session,
     user,
-    isLoading,
+    userProfile,
+    isLoading: isLoading || !initialAuthCheckComplete,
+    isProfileLoading,
     signOut,
+    refreshUserProfile,
   };
 
   return (
