@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -35,27 +34,16 @@ const Home = () => {
           setUserName(profile.name);
 
           // Check if the user has seen the welcome screen before
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .select('has_seen_welcome')
-            .eq('id', user.id)
-            .single();
-
-          if (error) {
-            console.error('Error fetching welcome screen status:', error);
-          } else {
-            // If the user has seen the welcome screen, don't show it again
-            if (data.has_seen_welcome) {
-              setShowWelcome(false);
-              
-              // Get or create a conversation
-              const storedConversationId = localStorage.getItem('currentConversationId');
-              if (storedConversationId) {
-                setConversationId(storedConversationId);
-                loadMessages(storedConversationId);
-              } else {
-                initializeNewConversation();
-              }
+          if (profile.has_seen_welcome) {
+            setShowWelcome(false);
+            
+            // Get or create a conversation
+            const storedConversationId = localStorage.getItem('currentConversationId');
+            if (storedConversationId) {
+              setConversationId(storedConversationId);
+              loadMessages(storedConversationId);
+            } else {
+              initializeNewConversation();
             }
           }
         }

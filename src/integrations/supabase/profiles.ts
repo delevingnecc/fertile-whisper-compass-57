@@ -7,7 +7,7 @@ export interface UserProfile {
     birthdate: Date | string;
     gender: string;
     onboarding_completed: boolean;
-    has_seen_welcome?: boolean;
+    has_seen_welcome: boolean;
     goals?: string[];
     created_at?: string;
     updated_at?: string;
