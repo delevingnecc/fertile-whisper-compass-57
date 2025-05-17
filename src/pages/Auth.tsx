@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +45,6 @@ const Auth = () => {
   const [authLoading, setAuthLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [anonymousLoading, setAnonymousLoading] = useState(false);
-  const [redirectAttempted, setRedirectAttempted] = useState(false);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -62,21 +62,13 @@ const Auth = () => {
     }
   });
 
-  // Only redirect if the user is authenticated AND we're on the /auth page
-  // Use a useEffect with a flag to prevent infinite loops
+  // Effect to handle redirecting authenticated users
   useEffect(() => {
-    if (!isLoading && user && location.pathname === '/auth' && !redirectAttempted) {
-      console.log('[Auth] User authenticated and on /auth page, redirecting to home');
-      setRedirectAttempted(true);
-      
-      // Use a timeout to ensure auth state is stable before navigating
-      const redirectTimeout = setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 0);
-      
-      return () => clearTimeout(redirectTimeout);
+    if (!isLoading && user) {
+      console.log('[Auth] User authenticated, redirecting to home');
+      navigate('/', { replace: true });
     }
-  }, [user, isLoading, navigate, location.pathname, redirectAttempted]);
+  }, [user, isLoading, navigate]);
   
   const handleLogin = async (values: LoginFormValues) => {
     setAuthLoading(true);
@@ -216,17 +208,11 @@ const Auth = () => {
     }
   };
   
-  // If already logged in, don't show auth form
-  if (!isLoading && user) {
+  // If still loading auth state, show loading indicator
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-          <p className="mb-4">You are already logged in!</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={() => navigate('/')}>Go to Home</Button>
-            <Button variant="outline" onClick={signOut}>Sign out</Button>
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
