@@ -6,10 +6,13 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://xdyedmrsjjtfzmbzygew.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkeWVkbXJzamp0ZnptYnp5Z2V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjQ4MjksImV4cCI6MjA2MzA0MDgyOX0.qocBynS74O3S03aCfYDAYSvs5XiXXMX8b8dxT9d_4HY";
 
+// Create a single instance of the Supabase client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage, // Explicitly use localStorage for auth state
     persistSession: true,  // Ensure session persistence across page loads
     autoRefreshToken: true, // Automatically refresh tokens
+    detectSessionInUrl: true, // Detect session information in the URL
+    flowType: 'implicit' // Use implicit flow for smoother auth
   }
 });

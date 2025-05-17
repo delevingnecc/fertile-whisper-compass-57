@@ -26,19 +26,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
   const isMounted = useRef(true);
   const initialCheckDone = useRef(false);
-  const authCheckTimeoutRef = useRef<number | null>(null);
+  const authCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileFetchInProgress = useRef(false);
 
   // Set a maximum timeout for the initial auth check to prevent endless loading
   useEffect(() => {
     isMounted.current = true;
     
-    authCheckTimeoutRef.current = window.setTimeout(() => {
+    // Shorter timeout for better UX
+    authCheckTimeoutRef.current = setTimeout(() => {
       if (isMounted.current && isLoading) {
         console.log("AuthProvider: Auth check timeout reached, forcing isLoading to false");
         setIsLoading(false);
       }
-    }, 2000); // 2 second max wait time
+    }, 1500); // 1.5 second max wait time
     
     return () => {
       isMounted.current = false;
@@ -88,17 +89,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
-    let profileTimeout: number | null = null;
+    let profileTimeout: ReturnType<typeof setTimeout> | null = null;
     
-    // Set up the auth state listener first
+    // First check for existing session to set initial state faster
+    const checkSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (!isMounted.current) return;
+        
+        console.log(`AuthProvider: Initial session check: ${currentSession?.user?.id || 'none'}`);
+        
+        if (currentSession?.user) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          
+          // Set loading to false as soon as we have confirmed a session
+          setIsLoading(false);
+          initialCheckDone.current = true;
+          
+          // Fetch profile in a non-blocking way
+          setTimeout(() => {
+            if (isMounted.current && !profileFetchInProgress.current) {
+              fetchUserProfile(currentSession.user);
+            }
+          }, 100);
+        } else if (initialCheckDone.current === false) {
+          // If no session and this is first check, set loading false with a slight delay
+          // This gives time for the auth state listener to pick up any session
+          setTimeout(() => {
+            if (isMounted.current && !initialCheckDone.current) {
+              console.log("AuthProvider: No session found in initial check");
+              setIsLoading(false);
+              initialCheckDone.current = true;
+            }
+          }, 300);
+        }
+      } catch (error) {
+        console.error("AuthProvider: Error in initial getSession:", error);
+        // Always set isLoading to false after initial check
+        if (isMounted.current) {
+          setIsLoading(false);
+          initialCheckDone.current = true;
+        }
+      }
+    };
+    
+    // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!isMounted.current) return;
         console.log(`AuthProvider: Auth state changed: ${event}, user: ${newSession?.user?.id || 'none'}`);
+        
+        // Mark initial check as done since we received an auth state event
+        initialCheckDone.current = true;
 
         // Update state with the new session information
         setSession(newSession);
         setUser(newSession?.user ?? null);
+        
+        // Always set loading to false after auth state change
+        setIsLoading(false);
 
         // Avoid potential deadlocks by using timeout for profile fetch
         if (newSession?.user) {
@@ -106,7 +157,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (profileTimeout) clearTimeout(profileTimeout);
           
           // Use setTimeout to avoid potential deadlock with Supabase client
-          profileTimeout = window.setTimeout(() => {
+          profileTimeout = setTimeout(() => {
             if (isMounted.current && !profileFetchInProgress.current) {
               fetchUserProfile(newSession.user);
             }
@@ -116,43 +167,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUserProfile(null);
           }
         }
-
-        // Make sure we're not stuck in loading state
-        if (isMounted.current && (initialCheckDone.current || event !== 'INITIAL_SESSION')) {
-          setIsLoading(false);
-        }
       }
     );
-
-    // Then check for existing session
-    const checkSession = async () => {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
-        if (!isMounted.current) return;
-        
-        console.log(`AuthProvider: Initial session check: ${currentSession?.user?.id || 'none'}`);
-        
-        initialCheckDone.current = true;
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user && !profileFetchInProgress.current) {
-          // Use setTimeout to avoid potential deadlocks
-          setTimeout(() => {
-            if (isMounted.current) fetchUserProfile(currentSession.user);
-          }, 100);
-        }
-      } catch (error) {
-        console.error("AuthProvider: Error in initial getSession:", error);
-      } finally {
-        // Always set isLoading to false after initial check
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
-      }
-    };
     
+    // Check for existing session
     checkSession();
 
     return () => {
