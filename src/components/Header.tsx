@@ -7,7 +7,7 @@ import ProfileMenu from './ProfileMenu';
 interface HeaderProps {
   title?: string;
   showBackButton?: boolean;
-  showProfileIcon?: boolean; // Add this prop to the interface
+  showProfileIcon?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ title, showBackButton = false, showProfileIcon = true }) => {

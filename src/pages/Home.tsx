@@ -166,12 +166,10 @@ const Home = () => {
     return <WelcomeScreen onGetStarted={handleGetStarted} />;
   }
 
-  return <div className="flex flex-col h-screen bg-white">
-      <div className={`flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden`} style={{
-      height: 'calc(100vh - 128px)'
-    }} // Adjust for header and bottom navigation
-    >
-        <div className="max-w-none mx-auto px-">
+  return (
+    <div className="flex flex-col h-full relative">
+      <div className="flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden">
+        <div className="max-w-none mx-auto">
           {messages.length === 0 ? (
             <FloatingElephant />
           ) : (
@@ -197,7 +195,8 @@ const Home = () => {
       <div className={`fixed ${isMobile ? 'bottom-20' : 'bottom-16'} left-0 right-0`}>
         <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Home;
