@@ -33,13 +33,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     isMounted.current = true;
     
-    // Shorter timeout for better UX
+    // Set timeout to 4 hours (14,400,000 milliseconds)
     authCheckTimeoutRef.current = setTimeout(() => {
       if (isMounted.current && isLoading) {
-        console.log("AuthProvider: Auth check timeout reached, forcing isLoading to false");
+        console.log("AuthProvider: Auth check timeout reached (4 hours), forcing isLoading to false");
         setIsLoading(false);
       }
-    }, 1500); // 1.5 second max wait time
+    }, 14400000); // 4 hours in milliseconds
     
     return () => {
       isMounted.current = false;
