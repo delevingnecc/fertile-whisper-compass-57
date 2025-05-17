@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Apple, Activity, Flower, ArrowsUpDown } from "lucide-react";
+import { Apple, Activity, Flower, ArrowUpDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 type WelcomeScreenProps = {
@@ -88,7 +88,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   <span className="text-gray-700">Fertility & hormone support</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <ArrowsUpDown className="text-accent-500 h-5 w-5" />
+                  <ArrowUpDown className="text-accent-500 h-5 w-5" />
                   <span className="text-gray-700">Perimenopause guidance</span>
                 </li>
               </ul>
