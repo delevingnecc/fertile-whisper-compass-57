@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -250,7 +249,7 @@ const Auth = () => {
               <img 
                 src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" 
                 alt="Elephant mascot" 
-                className="h-30 w-auto" 
+                className="h-24 w-auto" 
               />
             </motion.div>
             <h1 className="text-2xl font-bold text-primary-800">Welcome to Genesis</h1>
