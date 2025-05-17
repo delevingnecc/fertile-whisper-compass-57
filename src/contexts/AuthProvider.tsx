@@ -48,6 +48,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     refreshUserProfile,
   };
 
+  // Only log once when AuthProvider is initially rendered
+  React.useEffect(() => {
+    console.log("AuthProvider: Initialized");
+  }, []);
+
   return (
     <AuthContext.Provider value={value}>
       {children}

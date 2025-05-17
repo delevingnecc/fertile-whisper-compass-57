@@ -1,16 +1,23 @@
+
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import MainLayout from "@/layouts/MainLayout";
 
 const AuthRoute = () => {
   const { user, userProfile, isLoading, isProfileLoading } = useAuth();
   const location = useLocation();
+  const loggedOnce = useRef(false);
 
   useEffect(() => {
-    console.log(
-      `AuthRoute: Path ${location.pathname}, isLoading: ${isLoading}, isProfileLoading: ${isProfileLoading}, user: ${user?.id || 'none'}, onboarding: ${userProfile?.onboarding_completed}`
-    );
+    // Only log once per path to reduce console clutter
+    if (!loggedOnce.current) {
+      console.log(
+        `AuthRoute: Initial check - Path ${location.pathname}, isLoading: ${isLoading}, isProfileLoading: ${isProfileLoading}, user: ${user?.id || 'none'}, onboarding: ${userProfile?.onboarding_completed}`
+      );
+      loggedOnce.current = true;
+    }
   }, [location.pathname, isLoading, isProfileLoading, user, userProfile]);
 
   const showLoading = isLoading || isProfileLoading;
@@ -47,7 +54,13 @@ const AuthRoute = () => {
   }
 
   console.log("AuthRoute: User authenticated, rendering content");
-  return <Outlet />;
+  
+  // Wrap the content in our MainLayout
+  return (
+    <MainLayout>
+      <Outlet />
+    </MainLayout>
+  );
 };
 
 export default AuthRoute;
