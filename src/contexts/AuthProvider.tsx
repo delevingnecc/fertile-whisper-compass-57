@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -23,12 +23,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Use a ref to track if we've shown a toast for the current session
   // This prevents repeated toasts when the component re-renders
   const sessionIdRef = useRef<string | null>(null);
+  const isMounted = useRef(true);
 
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      console.log("AuthProvider: Cleaning up");
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Initial session check and auth state listener setup - only run once
+  useEffect(() => {
     let mounted = true;
     
-    // First, check for existing session (without triggering events)
+    // First, check for existing session
     const checkSession = async () => {
       try {
         console.log("AuthProvider: Checking for existing session");
@@ -108,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [toast, initialCheckComplete]); // Remove session from dependencies
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       console.log("AuthProvider: Signing out");
       await supabase.auth.signOut();
@@ -121,7 +132,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "An error occurred while signing out."
       });
     }
-  };
+  }, [toast]);
 
   const value = {
     session,

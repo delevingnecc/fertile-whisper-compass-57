@@ -17,9 +17,11 @@ import AuthCallback from "./pages/AuthCallback";
 import { AuthProvider } from "./contexts/AuthProvider";
 import AuthGuard from "./components/AuthGuard";
 
+// Create the query client instance outside of the component to avoid recreating it on each render
 const queryClient = new QueryClient();
 
 const App = () => (
+  // BrowserRouter is now the outermost wrapper to prevent routing issues
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

@@ -12,13 +12,11 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
   
-  // Use refs to track state without triggering re-renders
-  const initialAuthCheckDone = useRef(false);
-  const lastNavigationPath = useRef<string | null>(null);
+  // Use refs to track initialization state
+  const initialCheckDone = useRef(false);
   const isMounted = useRef(true);
 
   // Cleanup on unmount
@@ -28,54 +26,38 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     };
   }, []);
 
-  // Authentication check
+  // Authentication check - ONLY on initial mount
   useEffect(() => {
-    // Skip checks if already navigating or if component is unmounted
-    if (!isMounted.current) return;
-
-    console.log("AuthGuard: Auth check triggered", {
-      isLoading,
-      user: user?.id || "none",
-      path: location.pathname,
-      initialAuthCheckDone: initialAuthCheckDone.current
-    });
-
+    // Skip if already checked or component is unmounting
+    if (!isMounted.current || initialCheckDone.current) return;
+    
     // Skip if still loading auth state
     if (isLoading) {
       console.log("AuthGuard: Still loading auth state");
       return;
     }
 
-    // If this is our first auth check after loading
-    if (!initialAuthCheckDone.current) {
-      initialAuthCheckDone.current = true;
+    console.log("AuthGuard: Initial auth check, path:", location.pathname);
+    initialCheckDone.current = true;
 
-      // If user is not authenticated, redirect to auth page
-      if (!user) {
-        console.log("AuthGuard: No authenticated user");
-        
-        // Only redirect if not already on auth-related paths
-        if (!location.pathname.startsWith('/auth') && lastNavigationPath.current !== '/auth') {
-          console.log("AuthGuard: Redirecting to /auth");
-          lastNavigationPath.current = '/auth';
-          navigate('/auth', { replace: true });
-        }
-        return;
+    // If no user, redirect to auth (but only if not already on auth path)
+    if (!user) {
+      if (!location.pathname.startsWith('/auth')) {
+        console.log("AuthGuard: No authenticated user, redirecting to /auth");
+        navigate('/auth', { replace: true });
       }
-
-      // Check onboarding status only once per session
-      if (user && !onboardingChecked && !isCheckingOnboarding) {
-        // Skip onboarding check if user is already on the onboarding page
-        if (location.pathname === '/onboarding') {
-          console.log("AuthGuard: On onboarding page, skipping check");
-          setOnboardingChecked(true);
-        } else {
-          // Check onboarding status
-          checkOnboardingStatus(user.id);
-        }
-      }
+      return;
     }
-  }, [user, isLoading]); // Only depend on auth state, not location
+
+    // Check onboarding status only once for authenticated users
+    // Skip if already on onboarding page
+    if (location.pathname !== '/onboarding') {
+      checkOnboardingStatus(user.id);
+    } else {
+      // If we're already on onboarding page, no need to check
+      setOnboardingComplete(false);
+    }
+  }, [isLoading, user]); // Only depend on auth state changes
 
   // Separate function to check onboarding status
   const checkOnboardingStatus = async (userId: string) => {
@@ -84,31 +66,24 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     setIsCheckingOnboarding(true);
     try {
       console.log("AuthGuard: Checking onboarding status for user", userId);
-      // Check if the user has completed onboarding
       const completed = await hasCompletedOnboarding(userId);
       console.log("AuthGuard: Onboarding completed:", completed);
       
       if (!isMounted.current) return;
       
       setOnboardingComplete(completed);
-      setOnboardingChecked(true);
 
       if (!completed && location.pathname !== '/onboarding') {
         console.log("AuthGuard: Onboarding not complete, redirecting to /onboarding");
-        lastNavigationPath.current = '/onboarding';
         navigate('/onboarding', { replace: true });
       }
     } catch (error) {
       console.error('AuthGuard: Error checking onboarding status:', error);
       
       if (!isMounted.current) return;
-      
-      // On error, assume onboarding is not complete
       setOnboardingComplete(false);
-      setOnboardingChecked(true);
       
       if (location.pathname !== '/onboarding') {
-        lastNavigationPath.current = '/onboarding';
         navigate('/onboarding', { replace: true });
       }
     } finally {
@@ -118,9 +93,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     }
   };
 
-  // Don't render anything while checking authentication or onboarding status
-  if (isLoading || (isCheckingOnboarding && !onboardingChecked)) {
-    console.log("AuthGuard: Loading state, showing spinner");
+  // Don't render anything while checking initial authentication
+  if (isLoading || (user && isCheckingOnboarding && onboardingComplete === null)) {
+    console.log("AuthGuard: Initial loading state, showing spinner");
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -130,20 +105,17 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
   // Allow rendering for authenticated users who:
   // 1. Have completed onboarding, or
-  // 2. Are on the onboarding page, or
-  // 3. Haven't been checked for onboarding yet (benefit of the doubt)
+  // 2. Are on the onboarding page
   const shouldRender = 
     !!user && (
       onboardingComplete === true || 
-      location.pathname === '/onboarding' || 
-      !onboardingChecked
+      location.pathname === '/onboarding'
     );
     
-  console.log("AuthGuard: Rendering decision", { 
+  console.log("AuthGuard: Final rendering decision", { 
     shouldRender, 
     onboardingComplete, 
-    path: location.pathname,
-    onboardingChecked 
+    path: location.pathname
   });
 
   return shouldRender ? <>{children}</> : null;
