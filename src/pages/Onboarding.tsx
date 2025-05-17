@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 // Define gender options
 const genderOptions = [
@@ -36,17 +37,53 @@ const nonBinaryOptions = [
     { value: 'other', label: 'Other' }
 ];
 
-// Define goal options
+// Define goal options with icon paths
 const goalOptions = [
-    { id: 'cycle', label: 'Track my menstrual cycle' },
-    { id: 'fertility', label: 'Get pregnant or optimize fertility' },
-    { id: 'freezing', label: 'Explore egg or embryo freezing' },
-    { id: 'perimenopause', label: 'Learn about perimenopause or menopause' },
-    { id: 'symptoms', label: 'Track perimenopause symptoms' },
-    { id: 'body', label: 'Better understand my body' },
-    { id: 'pain', label: 'Manage chronic pelvic pain or endometriosis' },
-    { id: 'wellness', label: 'Improve sleep, mood, or energy' },
-    { id: 'menopause', label: 'Manage my transition through menopause' }
+    { 
+        id: 'cycle', 
+        label: 'Track my menstrual cycle', 
+        icon: '/lovable-uploads/695c2bb8-bda9-4885-b9d1-3de018ee0fa2.png' 
+    },
+    { 
+        id: 'fertility', 
+        label: 'Get pregnant or optimize fertility', 
+        icon: '/lovable-uploads/fb8d2406-fc6b-4b53-a2b8-289ba0aa35a2.png' 
+    },
+    { 
+        id: 'freezing', 
+        label: 'Explore egg or embryo freezing',
+        icon: '/lovable-uploads/a3903eca-a189-4bd6-b0b8-3585400b138b.png'  
+    },
+    { 
+        id: 'perimenopause', 
+        label: 'Learn about perimenopause or menopause',
+        icon: '/lovable-uploads/f00ab20c-6e4b-4c6c-b795-60a674519d0b.png'  
+    },
+    { 
+        id: 'symptoms', 
+        label: 'Track perimenopause symptoms',
+        icon: '/lovable-uploads/30c1fe71-756c-49ec-af9b-b79768416395.png'  
+    },
+    { 
+        id: 'body', 
+        label: 'Better understand my body',
+        icon: '/lovable-uploads/ef1ec621-21a3-442b-88b7-b1fe23676cdb.png'  
+    },
+    { 
+        id: 'pain', 
+        label: 'Manage chronic pelvic pain or endometriosis',
+        icon: '/lovable-uploads/0b70c2b5-e4b0-4647-919d-e55a8e553e57.png'  
+    },
+    { 
+        id: 'wellness', 
+        label: 'Improve sleep, mood, or energy',
+        icon: '/lovable-uploads/d3f760b4-0e5d-4060-a2eb-10d1b09b24d2.png'  
+    },
+    { 
+        id: 'menopause', 
+        label: 'Manage my transition through menopause',
+        icon: '/lovable-uploads/f00ab20c-6e4b-4c6c-b795-60a674519d0b.png'  
+    }
 ];
 
 // Date formatter and parser
@@ -577,7 +614,7 @@ const Onboarding = () => {
                                             <div
                                                 key={goal.id}
                                                 onClick={() => toggleGoalSelection(goal.id)}
-                                                className={`cursor-pointer relative h-32 flex flex-col justify-center items-center text-center p-3 rounded-xl transition-all ${
+                                                className={`cursor-pointer relative h-32 flex flex-col justify-between items-center text-center p-3 rounded-xl transition-all ${
                                                     selectedGoals.includes(goal.id)
                                                         ? "border-2 border-primary bg-primary-50"
                                                         : "border border-gray-200 hover:border-gray-300"
@@ -588,6 +625,17 @@ const Onboarding = () => {
                                                         <Check size={14} />
                                                     </div>
                                                 )}
+                                                
+                                                {/* Goal Icon */}
+                                                <div className="flex justify-center items-center h-12 my-1">
+                                                    <img 
+                                                        src={goal.icon} 
+                                                        alt={goal.label} 
+                                                        className="h-10 w-auto"
+                                                    />
+                                                </div>
+                                                
+                                                {/* Goal Label */}
                                                 <p className="text-sm font-medium">{goal.label}</p>
                                             </div>
                                         ))}
