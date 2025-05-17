@@ -78,31 +78,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, fetchUserProfile]);
 
   useEffect(() => {
-    if (!isMounted.current) return;
-
+    isMounted.current = true;
+    
+    console.log("AuthProvider: Initial auth check");
     setIsLoading(true);
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      if (!isMounted.current) return;
-      console.log("AuthProvider: Initial session:", currentSession?.user?.id || "none");
-      setSession(currentSession);
-      const currentAuthUser = currentSession?.user ?? null;
-      setUser(currentAuthUser);
-      setInitialAuthCheckComplete(true);
-
-      if (currentAuthUser) {
-        await fetchUserProfile(currentAuthUser);
-      } else {
-        if (isMounted.current) setIsProfileLoading(false);
-      }
-      if (isMounted.current) setIsLoading(false);
-    }).catch(error => {
-      if (isMounted.current) {
-        console.error("AuthProvider: Error in initial getSession:", error);
-        setIsLoading(false);
-        setIsProfileLoading(false);
-      }
-    });
-
+    
+    // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!isMounted.current) return;
@@ -163,9 +144,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
+    // Then check for existing session
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (!isMounted.current) return;
+      console.log("AuthProvider: Initial session:", currentSession?.user?.id || "none");
+      setSession(currentSession);
+      const currentAuthUser = currentSession?.user ?? null;
+      setUser(currentAuthUser);
+      setInitialAuthCheckComplete(true);
+
+      if (currentAuthUser) {
+        await fetchUserProfile(currentAuthUser);
+      } else {
+        if (isMounted.current) setIsProfileLoading(false);
+      }
+      if (isMounted.current) setIsLoading(false);
+    }).catch(error => {
+      if (isMounted.current) {
+        console.error("AuthProvider: Error in initial getSession:", error);
+        setIsLoading(false);
+        setIsProfileLoading(false);
+      }
+    });
+
     return () => {
-      console.log("AuthProvider: Unsubscribing from auth state changes");
+      console.log("AuthProvider: Cleaning up");
+      isMounted.current = false;
       subscription.unsubscribe();
+      console.log("AuthProvider: Unsubscribing from auth state changes");
     };
   }, [toast, fetchUserProfile]);
 

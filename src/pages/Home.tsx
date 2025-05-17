@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -9,7 +10,7 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { getProfile } from '@/integrations/supabase/profiles';
 import { createConversation, getMessages } from '@/services/chatService';
 import { sendMessageToWebhook } from '@/services/webhookService';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Home = () => {

@@ -21,7 +21,7 @@ import ProtectedLayout from "./components/ProtectedLayout";
 const queryClient = new QueryClient();
 
 const App = () => (
-  // BrowserRouter is now the outermost wrapper to prevent routing issues
+  // BrowserRouter is the outermost wrapper to prevent routing issues
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -33,8 +33,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             
-            {/* Protected routes - all wrapped in a single ProtectedLayout */}
-            <Route path="/onboarding" element={<Onboarding />} />
+            {/* Protected routes - wrapped in ProtectedLayout */}
+            <Route path="/onboarding" element={<ProtectedLayout><Onboarding /></ProtectedLayout>} />
             <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />
             <Route path="/community" element={<ProtectedLayout><Community /></ProtectedLayout>} />
             <Route path="/clinician" element={<ProtectedLayout><Clinician /></ProtectedLayout>} />
