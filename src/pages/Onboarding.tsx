@@ -398,7 +398,7 @@ const Onboarding = () => {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step1"
                                     >
                                         Continue
@@ -458,7 +458,7 @@ const Onboarding = () => {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step2"
                                     >
                                         Continue
@@ -529,7 +529,6 @@ const Onboarding = () => {
                                                 </RadioGroup>
                                             </FormControl>
 
-                                            {/* Non-binary expanded options */}
                                             {showNonBinaryOptions && (
                                                 <motion.div
                                                     initial={{ opacity: 0, height: 0 }}
@@ -577,7 +576,7 @@ const Onboarding = () => {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step3"
                                     >
                                         Continue
@@ -655,7 +654,7 @@ const Onboarding = () => {
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting || selectedGoals.length === 0}
-                                        className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="complete-button"
                                     >
                                         {isSubmitting ? "Saving..." : "Complete"}

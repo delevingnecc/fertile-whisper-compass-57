@@ -285,7 +285,7 @@ const Auth = () => {
                       <FormMessage />
                     </FormItem>} />
 
-                  <Button type="submit" className="w-full" disabled={authLoading}>
+                  <Button type="submit" className="w-full h-12" disabled={authLoading}>
                     {authLoading ? "Logging in..." : "Login"}
                   </Button>
 
@@ -353,7 +353,7 @@ const Auth = () => {
                       <FormMessage />
                     </FormItem>} />
 
-                  <Button type="submit" className="w-full" disabled={authLoading}>
+                  <Button type="submit" className="w-full h-12" disabled={authLoading}>
                     {authLoading ? "Creating account..." : "Create account"}
                   </Button>
 
