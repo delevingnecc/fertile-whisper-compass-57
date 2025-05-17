@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -644,12 +643,12 @@ const Onboarding = () => {
                                                     </div>
                                                 )}
                                                 
-                                                {/* Goal Icon - updated to be 1.5x bigger */}
-                                                <div className="flex justify-center items-center h-18 my-1">
+                                                {/* Updated Goal Icon with 64px height */}
+                                                <div className="flex justify-center items-center my-1">
                                                     <img 
                                                         src={goal.icon} 
                                                         alt={goal.label} 
-                                                        className="h-15 w-auto" 
+                                                        className="h-16 w-auto" 
                                                     />
                                                 </div>
                                                 
