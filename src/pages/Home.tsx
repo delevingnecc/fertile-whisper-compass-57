@@ -7,6 +7,7 @@ import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import { Button } from '@/components/ui/button';
 import WelcomeScreen from '@/components/WelcomeScreen';
+import { useAuth } from '@/contexts/AuthProvider';
 
 // Mock initial messages
 const initialMessages: MessageType[] = [
@@ -18,13 +19,6 @@ const initialMessages: MessageType[] = [
   },
 ];
 
-// Mock user data (would come from authentication in a real app)
-const mockUserData = {
-  name: 'Sarah',
-  gender: 'female',
-  completed_onboarding: false,
-};
-
 const Home = () => {
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,16 +26,23 @@ const Home = () => {
   const [assistantName, setAssistantName] = useState('Eve');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // In reality, this would check if the user is authenticated and has completed onboarding
+    // Check if the user has completed onboarding
+    // For now, we'll just show the welcome screen based on a hardcoded value
+    // In a real app, this would be based on user data
     const checkOnboardingStatus = () => {
-      // For mock purposes, we're setting showWelcome based on our mock data
-      setShowWelcome(!mockUserData.completed_onboarding);
+      // For mock purposes, we're setting showWelcome based on whether this is the first visit
+      const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
       
-      // Set assistant name based on user gender
-      setAssistantName(mockUserData.gender === 'male' ? 'Adam' : 'Eve');
+      if (hasVisitedBefore) {
+        setShowWelcome(false);
+      }
+      
+      // Set assistant name based on user preference (mock)
+      setAssistantName('Eve');
     };
     
     checkOnboardingStatus();
@@ -91,8 +92,8 @@ const Home = () => {
   };
 
   const handleGetStarted = () => {
-    // In a real app, this would navigate to the onboarding flow
-    // For this demo, we'll just skip to the main app
+    // Mark that the user has visited before
+    localStorage.setItem('hasVisitedBefore', 'true');
     setShowWelcome(false);
   };
 
