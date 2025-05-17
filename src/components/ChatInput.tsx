@@ -28,7 +28,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled }) => {
       className="flex items-center gap-2 p-3 bg-white border-t border-gray-200"
       style={{ 
         boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
-        paddingBottom: '32px',
+        paddingBottom: isMobile ? '16px' : '16px',
         marginBottom: '0px',
       }}
     >
