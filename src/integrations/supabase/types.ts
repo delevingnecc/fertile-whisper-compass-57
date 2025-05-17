@@ -171,6 +171,7 @@ export type Database = {
           birthdate: string
           created_at: string | null
           gender: string
+          goals: string[] | null
           id: string
           name: string
           onboarding_completed: boolean | null
@@ -180,6 +181,7 @@ export type Database = {
           birthdate: string
           created_at?: string | null
           gender: string
+          goals?: string[] | null
           id: string
           name: string
           onboarding_completed?: boolean | null
@@ -189,6 +191,7 @@ export type Database = {
           birthdate?: string
           created_at?: string | null
           gender?: string
+          goals?: string[] | null
           id?: string
           name?: string
           onboarding_completed?: boolean | null

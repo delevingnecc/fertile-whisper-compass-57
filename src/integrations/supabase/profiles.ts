@@ -7,6 +7,7 @@ export interface UserProfile {
     birthdate: Date | string;
     gender: string;
     onboarding_completed: boolean;
+    goals?: string[];
     created_at?: string;
     updated_at?: string;
 }
@@ -39,7 +40,8 @@ export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'u
             name: profile.name,
             birthdate: birthdate,
             gender: profile.gender,
-            onboarding_completed: profile.onboarding_completed
+            onboarding_completed: profile.onboarding_completed,
+            goals: profile.goals || []
         }, {
             onConflict: 'id'
         });

@@ -9,6 +9,7 @@ import { format, parse, isValid } from 'date-fns';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/components/ui/use-toast';
 import { upsertProfile } from '@/integrations/supabase/profiles';
+import { Check } from 'lucide-react';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
 
 // Define gender options
 const genderOptions = [
@@ -33,6 +35,19 @@ const nonBinaryOptions = [
     { value: 'agender', label: 'Agender' },
     { value: 'bigender', label: 'Bigender' },
     { value: 'other', label: 'Other' }
+];
+
+// Define goal options
+const goalOptions = [
+    { id: 'cycle', label: 'Track my menstrual cycle' },
+    { id: 'fertility', label: 'Get pregnant or optimize fertility' },
+    { id: 'freezing', label: 'Explore egg or embryo freezing' },
+    { id: 'perimenopause', label: 'Learn about perimenopause or menopause' },
+    { id: 'symptoms', label: 'Track perimenopause symptoms' },
+    { id: 'body', label: 'Better understand my body' },
+    { id: 'pain', label: 'Manage chronic pelvic pain or endometriosis' },
+    { id: 'wellness', label: 'Improve sleep, mood, or energy' },
+    { id: 'menopause', label: 'Manage my transition through menopause' }
 ];
 
 // Date formatter and parser
@@ -66,6 +81,11 @@ const genderSchema = z.object({
   gender: z.string().min(1, { message: 'Please select a gender option' }),
 });
 
+// Add a schema for goals
+const goalsSchema = z.object({
+  goals: z.array(z.string()).min(1, { message: 'Please select at least one goal' })
+});
+
 // Combined schema for final submission
 const onboardingSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -76,6 +96,7 @@ const onboardingSchema = z.object({
       return parsedDate && parsedDate <= new Date() && parsedDate > new Date('1900-01-01');
     }, { message: 'Please enter a valid date between 1900 and today' }),
   gender: z.string().min(1, { message: 'Please select a gender option' }),
+  goals: z.array(z.string()).min(1, { message: 'Please select at least one goal' })
 });
 
 type OnboardingValues = z.infer<typeof onboardingSchema>;
@@ -84,6 +105,7 @@ const Onboarding = () => {
     const [step, setStep] = useState(1);
     const [showNonBinaryOptions, setShowNonBinaryOptions] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
     const { user } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
@@ -95,6 +117,7 @@ const Onboarding = () => {
             name: '',
             gender: '',
             birthdate: '',
+            goals: []
         },
         mode: 'onChange',
     });
@@ -131,6 +154,18 @@ const Onboarding = () => {
             isValid = await form.trigger('gender');
             console.log(`[DEBUG] Gender validation result: ${isValid}`);
         }
+        else if (step === 4) {
+            // For step 4, validate the goals field
+            form.setValue('goals', selectedGoals);
+            isValid = selectedGoals.length > 0;
+            console.log(`[DEBUG] Goals validation result: ${isValid}`);
+            if (!isValid) {
+                form.setError('goals', {
+                    type: 'manual',
+                    message: 'Please select at least one goal'
+                });
+            }
+        }
         
         // Only proceed if the current step's validation passed
         if (isValid) {
@@ -158,6 +193,16 @@ const Onboarding = () => {
     const handleNonBinaryOptionSelect = (value: string) => {
         console.log(`[DEBUG] Non-binary option selected: ${value}`);
         form.setValue('gender', value);
+    };
+
+    const toggleGoalSelection = (goalId: string) => {
+        setSelectedGoals(prev => {
+            if (prev.includes(goalId)) {
+                return prev.filter(id => id !== goalId);
+            } else {
+                return [...prev, goalId];
+            }
+        });
     };
 
     const onSubmit = async (values: OnboardingValues) => {
@@ -191,7 +236,8 @@ const Onboarding = () => {
                 name: values.name,
                 birthdate: parsedDate,
                 gender: values.gender,
-                onboarding_completed: true
+                onboarding_completed: true,
+                goals: selectedGoals
             });
 
             console.log(`[DEBUG] Profile successfully saved`);
@@ -228,6 +274,10 @@ const Onboarding = () => {
         3: {
             title: "Just one more thing...",
             subtitle: "Which best describes you?"
+        },
+        4: {
+            title: "How can I help you?",
+            subtitle: "Select all that apply"
         }
     };
 
@@ -258,7 +308,7 @@ const Onboarding = () => {
             {/* Progress indicator - subtle dots at top */}
             <div className="w-full px-6 py-2 z-10">
                 <div className="flex space-x-2">
-                    {[1, 2, 3].map((i) => (
+                    {[1, 2, 3, 4].map((i) => (
                         <div
                             key={i}
                             className={`h-1.5 rounded-full flex-1 ${i <= step ? 'bg-primary' : 'bg-gray-200'
@@ -478,8 +528,71 @@ const Onboarding = () => {
 
                                 <div className="mt-auto pt-6 pb-10 mb-4">
                                     <Button
+                                        type="button"
+                                        onClick={nextStep}
+                                        className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        data-testid="continue-button-step3"
+                                    >
+                                        Continue
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 4 && (
+                            <motion.div
+                                key="step4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex-1 flex flex-col px-6 pt-8 overflow-auto"
+                            >
+                                <div className="mb-6">
+                                    <button
+                                        onClick={prevStep}
+                                        className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors p-2"
+                                        type="button"
+                                    >
+                                        <ArrowLeft className="mr-1 h-4 w-4" />
+                                        Back
+                                    </button>
+                                    <h1 className="text-3xl font-bold mb-2">{headers[4].title}</h1>
+                                    <h2 className="text-2xl font-medium text-gray-900">{headers[4].subtitle}</h2>
+                                </div>
+
+                                <div className="mb-4">
+                                    <div className="grid grid-cols-2 gap-3 mb-2">
+                                        {goalOptions.map((goal) => (
+                                            <div
+                                                key={goal.id}
+                                                onClick={() => toggleGoalSelection(goal.id)}
+                                                className={`cursor-pointer relative h-32 flex flex-col justify-center items-center text-center p-3 rounded-xl transition-all ${
+                                                    selectedGoals.includes(goal.id)
+                                                        ? "border-2 border-primary bg-primary-50"
+                                                        : "border border-gray-200 hover:border-gray-300"
+                                                }`}
+                                            >
+                                                {selectedGoals.includes(goal.id) && (
+                                                    <div className="absolute top-2 right-2 p-1 rounded-full bg-primary text-white">
+                                                        <Check size={14} />
+                                                    </div>
+                                                )}
+                                                <p className="text-sm font-medium">{goal.label}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {form.formState.errors.goals && (
+                                        <p className="text-sm font-medium text-red-500 mt-2">
+                                            {form.formState.errors.goals.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="mt-auto pt-6 pb-10 mb-4">
+                                    <Button
                                         type="submit"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting || selectedGoals.length === 0}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="complete-button"
                                     >
