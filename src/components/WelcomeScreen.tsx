@@ -1,9 +1,14 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Apple, Activity, Flower, ArrowsUpDown } from "lucide-react";
+import { Card } from "@/components/ui/card";
+
 type WelcomeScreenProps = {
   onGetStarted: () => void;
 };
+
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onGetStarted
 }) => {
@@ -60,6 +65,35 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         }}>
             Eve is here to provide guidance, support, and personalized advice for your fertility health
           </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="w-full mb-8"
+          >
+            <Card className="p-5 bg-white/80 backdrop-blur shadow-md border border-primary-100">
+              <h3 className="font-semibold text-primary-700 mb-3 text-left">Eve's here to support you with:</h3>
+              <ul className="space-y-3 text-left">
+                <li className="flex items-center gap-2">
+                  <Apple className="text-accent-500 h-5 w-5" />
+                  <span className="text-gray-700">Nutrition advice</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Activity className="text-accent-500 h-5 w-5" />
+                  <span className="text-gray-700">Fitness & lifestyle tips</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Flower className="text-accent-500 h-5 w-5" />
+                  <span className="text-gray-700">Fertility & hormone support</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <ArrowsUpDown className="text-accent-500 h-5 w-5" />
+                  <span className="text-gray-700">Perimenopause guidance</span>
+                </li>
+              </ul>
+            </Card>
+          </motion.div>
         </motion.div>
       </div>
       
@@ -83,4 +117,5 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       </p>
     </div>;
 };
+
 export default WelcomeScreen;
