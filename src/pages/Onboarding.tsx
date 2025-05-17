@@ -631,7 +631,7 @@ const Onboarding = () => {
                                             <div
                                                 key={goal.id}
                                                 onClick={() => toggleGoalSelection(goal.id)}
-                                                className={`cursor-pointer relative h-32 flex flex-col justify-between items-center text-center p-3 rounded-xl transition-all ${
+                                                className={`cursor-pointer relative flex flex-col justify-between items-center text-center p-3 rounded-xl transition-all h-[160px] ${
                                                     selectedGoals.includes(goal.id)
                                                         ? "border-2 border-primary bg-primary-50"
                                                         : "border border-gray-200 hover:border-gray-300"
@@ -643,8 +643,8 @@ const Onboarding = () => {
                                                     </div>
                                                 )}
                                                 
-                                                {/* Updated Goal Icon with 64px height */}
-                                                <div className="flex justify-center items-center my-1">
+                                                {/* Goal Icon with fixed height */}
+                                                <div className="flex justify-center items-center mt-2">
                                                     <img 
                                                         src={goal.icon} 
                                                         alt={goal.label} 
@@ -652,8 +652,8 @@ const Onboarding = () => {
                                                     />
                                                 </div>
                                                 
-                                                {/* Goal Label */}
-                                                <p className="text-sm font-medium">{goal.label}</p>
+                                                {/* Goal Label with overflow handling */}
+                                                <p className="text-sm font-medium line-clamp-3 mt-auto mb-1">{goal.label}</p>
                                             </div>
                                         ))}
                                     </div>
