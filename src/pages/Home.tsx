@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -188,7 +189,7 @@ const Home = () => {
         className={`flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden`}
         style={{ height: 'calc(100vh - 128px)' }} // Adjust for header and bottom navigation
       >
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-none mx-auto px-4">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
