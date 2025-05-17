@@ -10,11 +10,10 @@ const AuthRoute = () => {
 
   // Log route information for debugging
   useEffect(() => {
-    console.log(`AuthRoute: Current path: ${location.pathname}, isLoading: ${isLoading}, user: ${user?.id || 'none'}`);
+    console.log(`AuthRoute: Path ${location.pathname}, isLoading: ${isLoading}, user: ${user?.id || 'none'}`);
   }, [location.pathname, isLoading, user]);
 
-  // Show loading spinner for a maximum of 2 seconds
-  // This prevents an endless loading state if something goes wrong
+  // If still loading, show loading spinner
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -26,18 +25,18 @@ const AuthRoute = () => {
     );
   }
 
-  // If not authenticated, redirect to login
-  // Store the current path to redirect back after login
+  // If not authenticated and not on an auth page, redirect to login
   if (!user) {
     console.log("AuthRoute: User not authenticated, redirecting to login");
-    // Only redirect to auth if we're not already there
-    if (location.pathname !== "/auth" && location.pathname !== "/auth/callback") {
+    
+    // Only redirect if we're not already on an auth page
+    if (!location.pathname.startsWith("/auth")) {
       return <Navigate to="/auth" state={{ from: location }} replace />;
     }
   }
 
   // If authenticated, render the protected content
-  console.log("AuthRoute: User authenticated, rendering protected content");
+  console.log("AuthRoute: User authenticated or on auth page, rendering content");
   return <Outlet />;
 };
 

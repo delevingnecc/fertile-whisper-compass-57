@@ -4,7 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { getProfile, UserProfile } from '@/integrations/supabase/profiles';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   session: Session | null;
@@ -27,14 +27,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
   const isMounted = useRef(true);
   const navigate = useNavigate();
-  const location = useLocation();
   const initialCheckDone = useRef(false);
   const authCheckTimeoutRef = useRef<number | null>(null);
 
+  // Set a maximum timeout for the initial auth check to prevent endless loading
   useEffect(() => {
     isMounted.current = true;
     
-    // Set a maximum timeout for the initial auth check to prevent endless loading
     authCheckTimeoutRef.current = window.setTimeout(() => {
       if (isMounted.current && isLoading) {
         console.log("AuthProvider: Auth check timeout reached, forcing isLoading to false");
@@ -88,21 +87,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
-    let hasCalledFetchProfileForInitialSession = false;
     
     // Set up the auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         if (!isMounted.current) return;
-        console.log("AuthProvider: Auth state changed:", event, newSession?.user?.id);
+        console.log(`AuthProvider: Auth state changed: ${event}, user: ${newSession?.user?.id || 'none'}`);
 
-        // Don't update state for AUTH_STATECHANGE events on auth page as it causes redirect loops
-        if (event === 'INITIAL_SESSION' && location.pathname === '/auth' && newSession?.user) {
-          console.log("AuthProvider: On auth page with active session, not updating state to avoid redirect loop");
-          setIsLoading(false);
-          return;
-        }
-
+        // Update state with the new session information
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
@@ -129,18 +121,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!isMounted.current) return;
-      console.log("AuthProvider: Initial session check:", currentSession?.user?.id || "none");
+      console.log(`AuthProvider: Initial session check: ${currentSession?.user?.id || 'none'}`);
       
       initialCheckDone.current = true;
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
-      if (currentSession?.user && !hasCalledFetchProfileForInitialSession) {
-        hasCalledFetchProfileForInitialSession = true;
+      if (currentSession?.user) {
         fetchUserProfile(currentSession.user);
       }
       
-      // Always set isLoading to false after initial check to avoid stuck loading state
+      // Always set isLoading to false after initial check
       if (isMounted.current) {
         setIsLoading(false);
       }
@@ -157,7 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted.current = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, location.pathname]);
+  }, [fetchUserProfile]);
 
   const signOut = useCallback(async () => {
     try {
