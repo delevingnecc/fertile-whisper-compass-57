@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -63,10 +62,10 @@ const Auth = () => {
     }
   });
 
-  // If user is already authenticated, redirect to home
+  // Only redirect if the user is authenticated AND we're on the /auth page
   useEffect(() => {
-    if (!isLoading && user) {
-      console.log('[Auth] User already authenticated, redirecting to home');
+    if (!isLoading && user && location.pathname === '/auth') {
+      console.log('[Auth] User authenticated and on /auth page, redirecting to home');
       // Use a timeout to ensure auth state is stable before navigating
       const redirectTimeout = setTimeout(() => {
         navigate('/');
@@ -74,7 +73,7 @@ const Auth = () => {
       
       return () => clearTimeout(redirectTimeout);
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, location.pathname]);
   
   const handleLogin = async (values: LoginFormValues) => {
     setAuthLoading(true);
