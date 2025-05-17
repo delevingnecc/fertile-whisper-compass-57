@@ -4,7 +4,6 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { getProfile, UserProfile } from '@/integrations/supabase/profiles';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   session: Session | null;
@@ -26,9 +25,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const { toast } = useToast();
   const isMounted = useRef(true);
-  const navigate = useNavigate();
   const initialCheckDone = useRef(false);
   const authCheckTimeoutRef = useRef<number | null>(null);
+  const profileFetchInProgress = useRef(false);
 
   // Set a maximum timeout for the initial auth check to prevent endless loading
   useEffect(() => {
@@ -39,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log("AuthProvider: Auth check timeout reached, forcing isLoading to false");
         setIsLoading(false);
       }
-    }, 3000); // 3 second max wait time
+    }, 2000); // 2 second max wait time
     
     return () => {
       isMounted.current = false;
@@ -50,19 +49,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const fetchUserProfile = useCallback(async (currentUser: User | null) => {
-    if (!currentUser) {
-      if (isMounted.current) {
+    if (!currentUser || profileFetchInProgress.current) {
+      if (isMounted.current && !currentUser) {
         setUserProfile(null);
-        setIsProfileLoading(false);
       }
       return;
     }
 
-    console.log("AuthProvider: Fetching user profile for", currentUser.id);
-    if (isMounted.current) setIsProfileLoading(true);
-
     try {
+      profileFetchInProgress.current = true;
+      console.log("AuthProvider: Fetching user profile for", currentUser.id);
+      if (isMounted.current) setIsProfileLoading(true);
+
       const profile = await getProfile(currentUser.id);
+      
       if (isMounted.current) {
         setUserProfile(profile);
         console.log("AuthProvider: User profile fetched:", profile);
@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserProfile(null);
       }
     } finally {
+      profileFetchInProgress.current = false;
       if (isMounted.current) {
         setIsProfileLoading(false);
       }
@@ -80,17 +81,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const refreshUserProfile = useCallback(async () => {
-    if (user) {
+    if (user && !profileFetchInProgress.current) {
       await fetchUserProfile(user);
     }
   }, [user, fetchUserProfile]);
 
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
+    let profileTimeout: number | null = null;
     
     // Set up the auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         if (!isMounted.current) return;
         console.log(`AuthProvider: Auth state changed: ${event}, user: ${newSession?.user?.id || 'none'}`);
 
@@ -98,13 +100,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
-        // Use setTimeout to avoid potential deadlock with Supabase client
+        // Avoid potential deadlocks by using timeout for profile fetch
         if (newSession?.user) {
-          setTimeout(() => {
-            if (isMounted.current) {
+          // Clear any existing timeouts to prevent multiple fetches
+          if (profileTimeout) clearTimeout(profileTimeout);
+          
+          // Use setTimeout to avoid potential deadlock with Supabase client
+          profileTimeout = window.setTimeout(() => {
+            if (isMounted.current && !profileFetchInProgress.current) {
               fetchUserProfile(newSession.user);
             }
-          }, 0);
+          }, 100);
         } else {
           if (isMounted.current) {
             setUserProfile(null);
@@ -119,45 +125,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      if (!isMounted.current) return;
-      console.log(`AuthProvider: Initial session check: ${currentSession?.user?.id || 'none'}`);
-      
-      initialCheckDone.current = true;
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        fetchUserProfile(currentSession.user);
-      }
-      
-      // Always set isLoading to false after initial check
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
-    }).catch(error => {
-      console.error("AuthProvider: Error in initial getSession:", error);
-      if (isMounted.current) {
+    const checkSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (!isMounted.current) return;
+        
+        console.log(`AuthProvider: Initial session check: ${currentSession?.user?.id || 'none'}`);
+        
         initialCheckDone.current = true;
-        setIsLoading(false);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user && !profileFetchInProgress.current) {
+          // Use setTimeout to avoid potential deadlocks
+          setTimeout(() => {
+            if (isMounted.current) fetchUserProfile(currentSession.user);
+          }, 100);
+        }
+      } catch (error) {
+        console.error("AuthProvider: Error in initial getSession:", error);
+      } finally {
+        // Always set isLoading to false after initial check
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
       }
-    });
+    };
+    
+    checkSession();
 
     return () => {
       console.log("AuthProvider: Cleaning up auth listener");
       isMounted.current = false;
+      if (profileTimeout) clearTimeout(profileTimeout);
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile]);
+  }, []); // Empty dependency array to run only once
 
   const signOut = useCallback(async () => {
     try {
       console.log("AuthProvider: Signing out");
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
-      // Redirect to auth page after sign out
-      navigate('/auth');
     } catch (error) {
       console.error("AuthProvider: Error signing out:", error);
       toast({
@@ -166,7 +176,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: (error instanceof Error ? error.message : "An error occurred while signing out."),
       });
     }
-  }, [toast, navigate]);
+  }, [toast]);
 
   const value = {
     session,

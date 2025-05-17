@@ -1,4 +1,3 @@
-
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +12,7 @@ const AuthRoute = () => {
     console.log(`AuthRoute: Path ${location.pathname}, isLoading: ${isLoading}, user: ${user?.id || 'none'}`);
   }, [location.pathname, isLoading, user]);
 
-  // If still loading, show loading spinner
+  // If still loading, show loading spinner, but only for a brief period
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -25,17 +24,20 @@ const AuthRoute = () => {
     );
   }
 
-  // If not authenticated and not on an auth page, redirect to login
+  // If not authenticated and not already on an auth page, redirect to login
   if (!user) {
-    console.log("AuthRoute: User not authenticated, redirecting to login");
-    
-    // Only redirect if we're not already on an auth page
+    // Only redirect if we're not already on an auth page to prevent redirect loops
     if (!location.pathname.startsWith("/auth")) {
+      console.log("AuthRoute: User not authenticated, redirecting to login");
       return <Navigate to="/auth" state={{ from: location }} replace />;
     }
+  } else if (location.pathname.startsWith("/auth")) {
+    // If authenticated and on auth page, redirect to home
+    console.log("AuthRoute: User authenticated on auth page, redirecting to home");
+    return <Navigate to="/" replace />;
   }
 
-  // If authenticated, render the protected content
+  // Otherwise render the protected content or auth page
   console.log("AuthRoute: User authenticated or on auth page, rendering content");
   return <Outlet />;
 };
