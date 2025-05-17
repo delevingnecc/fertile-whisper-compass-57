@@ -249,10 +249,10 @@ const Auth = () => {
               <img 
                 src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" 
                 alt="Elephant mascot" 
-                className="h-24 w-auto" 
+                className="w-48 h-auto" // Updated to match FloatingElephant
               />
             </motion.div>
-            <h1 className="text-2xl font-bold text-primary-800">Welcome to Genesis</h1>
+            <h1 className="text-5xl font-bold text-primary-800 font-jakarta">Welcome to Genesis</h1>
             <p className="text-gray-600 mt-1">Your personal fertility companion</p>
           </div>
           

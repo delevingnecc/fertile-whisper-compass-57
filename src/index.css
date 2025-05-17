@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -36,6 +38,11 @@
     --ring: 273 68% 59%; /* Purple */
 
     --radius: 0.5rem;
+  }
+
+  /* Apply font to headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
   .dark {

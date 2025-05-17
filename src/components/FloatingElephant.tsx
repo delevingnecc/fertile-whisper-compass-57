@@ -21,7 +21,7 @@ const FloatingElephant = () => {
         <img 
           src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" 
           alt="Eve the elephant" 
-          className="h-48 w-auto" // Changed from h-60 to h-48 (20% reduction)
+          className="w-48 h-auto" // Changed to w-48 (12rem)
         />
       </motion.div>
       <motion.div
