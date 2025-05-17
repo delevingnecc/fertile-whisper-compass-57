@@ -21,7 +21,7 @@ const TestKitPromoCard = () => {
       toast({
         title: "Purchase Successful!",
         description: "Your test kit will be shipped within 2 business days.",
-        variant: "success",
+        variant: "default", // Changed from "success" to "default"
       });
     }, 1500);
   };
