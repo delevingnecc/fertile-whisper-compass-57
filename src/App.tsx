@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,8 @@ import Products from "./pages/Products";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
+import AuthCallback from "./pages/AuthCallback";
 import { AuthProvider } from "./contexts/AuthProvider";
 import AuthGuard from "./components/AuthGuard";
 
@@ -26,6 +27,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding" element={<AuthGuard><Onboarding /></AuthGuard>} />
             <Route path="/" element={<AuthGuard><Home /></AuthGuard>} />
             <Route path="/community" element={<AuthGuard><Community /></AuthGuard>} />
             <Route path="/clinician" element={<AuthGuard><Clinician /></AuthGuard>} />
