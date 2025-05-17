@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Apple, Activity, Flower, ArrowUpDown } from "lucide-react";
+import { Apple, Activity, Flower } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useAuth } from '@/contexts/AuthProvider';
 import { getProfile } from '@/integrations/supabase/profiles';
@@ -34,7 +34,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     fetchUserProfile();
   }, [user]);
 
-  return <div className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-white to-primary-50 p-6 pb-8">
+  return <div className="h-screen flex flex-col items-center justify-between bg-gradient-to-b from-white to-primary-50 p-6 pb-8">
       <div className="w-full max-w-md flex flex-col items-center justify-center flex-1">
         <motion.div initial={{
         y: 30,
@@ -107,11 +107,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 </li>
                 <li className="flex items-center gap-2">
                   <Flower className="text-accent-500 h-5 w-5" />
-                  <span className="text-gray-700">Fertility & hormone support</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <ArrowUpDown className="text-accent-500 h-5 w-5" />
-                  <span className="text-gray-700">Perimenopause guidance</span>
+                  <span className="text-gray-700">Fertility & hormonal support</span>
                 </li>
               </ul>
             </Card>
