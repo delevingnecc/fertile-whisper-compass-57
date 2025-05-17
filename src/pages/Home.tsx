@@ -185,7 +185,7 @@ const Home = () => {
   return (
     <div className="flex flex-col h-full bg-white">
       <div 
-        className={`flex-1 overflow-y-auto pb-20 px-4 chat-gradient-bg scrollbar-hidden`}
+        className={`flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden`}
       >
         <div className="max-w-lg mx-auto">
           {messages.map((message) => (
