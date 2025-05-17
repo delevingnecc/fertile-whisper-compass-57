@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,8 @@ import {
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
-  CarouselNext
+  CarouselNext,
+  type CarouselApi
 } from "@/components/ui/carousel";
 import {
   ChartContainer,
@@ -38,6 +39,26 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Progress = () => {
+  // State to track the current carousel slide index
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [api, setApi] = useState<CarouselApi>();
+
+  // Set up callback for when the carousel changes slide
+  React.useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    const onChange = (index: number) => {
+      setCurrentSlide(index);
+    };
+
+    api.on("select", onChange);
+    return () => {
+      api.off("select", onChange);
+    };
+  }, [api]);
+
   // Mock data for dashboard cards
   const cycleData = [
     { day: 1, temp: 97.3, estrogen: 25, progesterone: 5, fertile: false },
@@ -160,6 +181,15 @@ const Progress = () => {
     return day + (suffix[(value - 20) % 10] || suffix[value] || suffix[0]);
   };
   
+  // Chart slide titles for navigation
+  const slideData = [
+    { title: "Cycle Insights", icon: null },
+    { title: "Heart Rate Variability", icon: HeartPulse },
+    { title: "Skin Temperature", icon: Thermometer },
+    { title: "Sleep Quality", icon: Bed },
+    { title: "Readiness Score", icon: Gauge }
+  ];
+  
   return (
     <div className="flex flex-col h-full bg-gray-900 text-white">
       <Header title="Your Journey" />
@@ -180,6 +210,8 @@ const Progress = () => {
               loop: true,
             }}
             className="w-full"
+            setApi={setApi}
+            defaultIndex={currentSlide}
           >
             <CarouselContent>
               {/* Cycle Insights Card */}
@@ -482,12 +514,26 @@ const Progress = () => {
                 </Card>
               </CarouselItem>
             </CarouselContent>
+
             <div className="mt-2 flex justify-center gap-1">
-              {[...Array(5)].map((_, index) => (
-                <div 
-                  key={index} 
-                  className={`h-1 w-8 rounded-full ${index === 0 ? 'bg-primary-400' : 'bg-gray-600'}`}
-                />
+              {slideData.map((slide, index) => (
+                <button 
+                  key={index}
+                  onClick={() => api?.scrollTo(index)}
+                  className="focus:outline-none"
+                  aria-label={`View ${slide.title} chart`}
+                >
+                  <div 
+                    className={`h-1 w-8 rounded-full transition-colors ${
+                      index === currentSlide ? 'bg-primary-400' : 'bg-gray-600 hover:bg-gray-500'
+                    }`}
+                  />
+                  {index === currentSlide && (
+                    <div className="mt-2 text-xs text-gray-300 font-medium text-center whitespace-nowrap">
+                      {slide.title}
+                    </div>
+                  )}
+                </button>
               ))}
             </div>
           </Carousel>
