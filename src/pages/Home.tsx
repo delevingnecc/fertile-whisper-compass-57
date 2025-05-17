@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import WelcomeScreen from '@/components/WelcomeScreen';
+import FloatingElephant from '@/components/FloatingElephant';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getProfile } from '@/integrations/supabase/profiles';
 import { createConversation, getMessages, saveMessage } from '@/services/chatService';
@@ -171,18 +172,24 @@ const Home = () => {
     }} // Adjust for header and bottom navigation
     >
         <div className="max-w-none mx-auto px-">
-          {messages.map(message => <ChatMessage key={message.id} message={message} assistantName={assistantName} userName={userName} />)}
-          {isLoading && <div className="flex items-center space-x-2 ml-10">
-              <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
-            animationDelay: "0ms"
-          }}></div>
-              <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
-            animationDelay: "200ms"
-          }}></div>
-              <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
-            animationDelay: "400ms"
-          }}></div>
-            </div>}
+          {messages.length === 0 ? (
+            <FloatingElephant />
+          ) : (
+            <>
+              {messages.map(message => <ChatMessage key={message.id} message={message} assistantName={assistantName} userName={userName} />)}
+              {isLoading && <div className="flex items-center space-x-2 ml-10">
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
+                animationDelay: "0ms"
+              }}></div>
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
+                animationDelay: "200ms"
+              }}></div>
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
+                animationDelay: "400ms"
+              }}></div>
+                </div>}
+            </>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>
