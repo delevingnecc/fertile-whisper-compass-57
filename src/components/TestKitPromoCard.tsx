@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,12 +11,12 @@ const TestKitPromoCard = () => {
 
   const handlePurchase = () => {
     setIsPurchasing(true);
-    
+
     // Simulate API call with setTimeout
     setTimeout(() => {
       setIsPurchasing(false);
       setIsPurchased(true);
-      
+
       toast({
         title: "Purchase Successful!",
         description: "Your test kit will be shipped within 2 business days.",
@@ -34,7 +33,7 @@ const TestKitPromoCard = () => {
           At-Home Fertility Test Kit
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <div className="flex items-center gap-4">
           <div className="h-20 w-20 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -47,13 +46,14 @@ const TestKitPromoCard = () => {
             </p>
             <div className="flex items-center">
               <span className="font-semibold text-primary-700">$189</span>
+              <span className="text-xs text-gray-500 line-through ml-2">$249</span>
             </div>
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter>
-        <Button 
+        <Button
           onClick={handlePurchase}
           disabled={isPurchasing || isPurchased}
           className="w-full"
