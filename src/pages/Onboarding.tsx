@@ -293,9 +293,9 @@ const Onboarding = () => {
                 description: "Almost done! Let's complete your profile."
             });
 
-            // Navigate to quiz prompt instead of home
-            console.log(`[DEBUG] Redirecting to quiz prompt`);
-            navigate('/quiz-prompt');
+            // Changed navigation destination from quiz-prompt to home (where welcome screen is shown)
+            console.log(`[DEBUG] Redirecting to home page with welcome screen`);
+            navigate('/home');
         } catch (error: any) {
             console.error('[DEBUG] Error saving profile:', error);
             toast({
