@@ -1,20 +1,21 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Stethoscope, TrendingUp, Package, Home } from 'lucide-react';
+import { Package, Users, Stethoscope, Route } from 'lucide-react';
 
 type NavItem = {
   icon: React.ReactNode;
   label: string;
   to: string;
+  isMain?: boolean;
 };
 
 const BottomNavigation = () => {
   const navItems: NavItem[] = [
     {
-      icon: <Home />,
-      label: 'Home',
-      to: '/',
+      icon: <Package />,
+      label: 'Products',
+      to: '/products',
     },
     {
       icon: <Users />,
@@ -22,19 +23,20 @@ const BottomNavigation = () => {
       to: '/community',
     },
     {
+      icon: <img src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" alt="Chat" className="h-7 w-7" />,
+      label: 'Chat',
+      to: '/',
+      isMain: true,
+    },
+    {
       icon: <Stethoscope />,
       label: 'Clinician',
       to: '/clinician',
     },
     {
-      icon: <TrendingUp />,
-      label: 'Progress',
+      icon: <Route />,
+      label: 'Journey',
       to: '/progress',
-    },
-    {
-      icon: <Package />,
-      label: 'Products',
-      to: '/products',
     },
   ];
 
@@ -47,13 +49,19 @@ const BottomNavigation = () => {
         <Link
           key={item.to}
           to={item.to}
-          className={`nav-icon ${currentPath === item.to ? 'active' : 'text-gray-500'}`}
+          className={`nav-icon flex flex-col items-center ${
+            item.isMain ? 'transform -translate-y-3' : ''
+          } ${currentPath === item.to ? 'active text-primary' : 'text-gray-500'}`}
         >
-          {React.cloneElement(item.icon as React.ReactElement, {
-            className: "h-6 w-6",
-            strokeWidth: 1.5,
-          })}
-          <span>{item.label}</span>
+          <div className={`${item.isMain ? 'bg-primary rounded-full p-2 shadow-lg' : ''}`}>
+            {React.isValidElement(item.icon) 
+              ? React.cloneElement(item.icon as React.ReactElement, {
+                  className: `${item.isMain ? 'h-6 w-6 text-white' : 'h-6 w-6'}`,
+                  strokeWidth: 1.5,
+                })
+              : item.icon}
+          </div>
+          <span className={`text-xs mt-1 ${item.isMain ? 'font-medium' : ''}`}>{item.label}</span>
         </Link>
       ))}
     </nav>
