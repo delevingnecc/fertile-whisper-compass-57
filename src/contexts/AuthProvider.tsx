@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,9 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
-  const [initialAuthCheckComplete, setInitialAuthCheckComplete] = useState(false);
   const { toast } = useToast();
-  const sessionIdRef = useRef<string | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -57,19 +56,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (isMounted.current) {
         setUserProfile(null);
       }
-      if (isMounted.current && !(error instanceof Error && error.message.includes("PGRST116"))) {
-        toast({
-          title: "Profile Error",
-          description: "Could not load your profile information.",
-          variant: "destructive",
-        });
-      }
     } finally {
       if (isMounted.current) {
         setIsProfileLoading(false);
       }
     }
-  }, [toast]);
+  }, []);
 
   const refreshUserProfile = useCallback(async () => {
     if (user) {
@@ -78,12 +70,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, fetchUserProfile]);
 
   useEffect(() => {
-    isMounted.current = true;
+    console.log("AuthProvider: Setting up auth state listener");
     
-    console.log("AuthProvider: Initial auth check");
-    setIsLoading(true);
-    
-    // First set up the auth state listener
+    // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!isMounted.current) return;
@@ -92,76 +81,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(newSession);
         const newAuthUser = newSession?.user ?? null;
         setUser(newAuthUser);
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') setIsLoading(true);
 
-        if (event === 'SIGNED_IN') {
-          if (newAuthUser) {
-            if (newAuthUser.id !== sessionIdRef.current || !userProfile) {
-              if (newAuthUser.id !== sessionIdRef.current) {
-                toast({ title: "Signed in", description: "You have been signed in successfully." });
-              }
-              sessionIdRef.current = newAuthUser.id;
-              await fetchUserProfile(newAuthUser);
-            } else {
-              if (isMounted.current) setIsProfileLoading(false);
-            }
-          } else {
-            if (isMounted.current) {
-              setUserProfile(null);
-              setIsProfileLoading(false);
-              sessionIdRef.current = null;
-            }
-          }
-        } else if (event === 'SIGNED_OUT') {
-          toast({ title: "Signed out", description: "You have been signed out successfully." });
+        if (newAuthUser) {
+          await fetchUserProfile(newAuthUser);
+        } else {
           if (isMounted.current) {
             setUserProfile(null);
-            setIsProfileLoading(false);
-            sessionIdRef.current = null;
-          }
-        } else if (event === 'USER_UPDATED' && newAuthUser) {
-          console.log("AuthProvider: User updated, refreshing profile.");
-          await fetchUserProfile(newAuthUser);
-        } else if (event === 'TOKEN_REFRESHED' && newAuthUser && !userProfile && !isProfileLoading) {
-          console.log("AuthProvider: Token refreshed, user exists but profile missing. Refetching.");
-          await fetchUserProfile(newAuthUser);
-        } else if (event === 'INITIAL_SESSION') {
-          if (newAuthUser && (!userProfile || newAuthUser.id !== sessionIdRef.current)) {
-            sessionIdRef.current = newAuthUser.id;
-            await fetchUserProfile(newAuthUser);
-          } else if (!newAuthUser) {
-            if (isMounted.current) {
-              setUserProfile(null);
-              setIsProfileLoading(false);
-              sessionIdRef.current = null;
-            }
           }
         }
 
-        if (initialAuthCheckComplete && isMounted.current) {
-          setIsLoading(false);
-        }
+        if (isMounted.current) setIsLoading(false);
       }
     );
 
-    // Then check for existing session
+    // Initial session check
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       if (!isMounted.current) return;
       console.log("AuthProvider: Initial session:", currentSession?.user?.id || "none");
+      
       setSession(currentSession);
       const currentAuthUser = currentSession?.user ?? null;
       setUser(currentAuthUser);
-      setInitialAuthCheckComplete(true);
 
       if (currentAuthUser) {
         await fetchUserProfile(currentAuthUser);
       } else {
         if (isMounted.current) setIsProfileLoading(false);
       }
+      
       if (isMounted.current) setIsLoading(false);
     }).catch(error => {
+      console.error("AuthProvider: Error in initial getSession:", error);
       if (isMounted.current) {
-        console.error("AuthProvider: Error in initial getSession:", error);
         setIsLoading(false);
         setIsProfileLoading(false);
       }
@@ -171,7 +122,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("AuthProvider: Cleaning up");
       isMounted.current = false;
       subscription.unsubscribe();
-      console.log("AuthProvider: Unsubscribing from auth state changes");
     };
   }, [toast, fetchUserProfile]);
 
@@ -194,7 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     user,
     userProfile,
-    isLoading: isLoading || !initialAuthCheckComplete,
+    isLoading,
     isProfileLoading,
     signOut,
     refreshUserProfile,

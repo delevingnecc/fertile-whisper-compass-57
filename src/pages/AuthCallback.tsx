@@ -1,14 +1,12 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 import { supabase } from '@/integrations/supabase/client';
 
 const AuthCallback = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
-    const [isProcessing, setIsProcessing] = useState(true);
 
     useEffect(() => {
         console.log("AuthCallback: Processing authentication callback");
@@ -35,34 +33,13 @@ const AuthCallback = () => {
                     }
                 }
                 
-                // Check if the user is authenticated
-                const { data: { user } } = await supabase.auth.getUser();
-                
-                // Check if user is authenticated
-                if (!user) {
-                    console.log("AuthCallback: No authenticated user");
-                    throw new Error("Authentication failed");
-                }
-                
-                console.log("AuthCallback: User authenticated:", user.id);
-
-                // Check if user has already completed onboarding
-                const completed = await hasCompletedOnboarding(user.id);
-                console.log("AuthCallback: Onboarding completed:", completed);
-
-                // Decide where to redirect
-                if (!completed) {
-                    console.log("AuthCallback: Redirecting to onboarding");
-                    navigate('/onboarding', { replace: true });
-                } else {
-                    console.log("AuthCallback: Redirecting to home");
-                    navigate('/', { replace: true });
-                }
-
                 toast({
                     title: "Success!",
                     description: "You've been successfully authenticated."
                 });
+                
+                // Simply navigate to home page without any checks
+                navigate('/', { replace: true });
             } catch (error) {
                 console.error('AuthCallback: Auth callback error:', error);
                 toast({
@@ -71,8 +48,6 @@ const AuthCallback = () => {
                     description: "There was a problem with your authentication. Please try again."
                 });
                 navigate('/auth', { replace: true });
-            } finally {
-                setIsProcessing(false);
             }
         };
 

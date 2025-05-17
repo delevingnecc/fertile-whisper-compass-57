@@ -40,12 +40,10 @@ const ProfileMenu = () => {
     navigate('/auth');
   };
 
-  if (!user) return null;
-
-  // Use first letter of name if available, otherwise use email
+  // Use first letter of name if available, otherwise use email or default
   const userInitial = userName 
     ? userName.charAt(0).toUpperCase()
-    : (user.email ? user.email.charAt(0).toUpperCase() : 'U');
+    : (user?.email ? user.email.charAt(0).toUpperCase() : 'U');
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -57,7 +55,7 @@ const ProfileMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <div className="px-2 py-1.5 text-xs text-muted-foreground">
-          {userName || user.email}
+          {userName || user?.email || 'Guest'}
         </div>
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <User className="mr-2 h-4 w-4" />

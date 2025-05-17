@@ -15,7 +15,6 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import AuthCallback from "./pages/AuthCallback";
 import { AuthProvider } from "./contexts/AuthProvider";
-import ProtectedLayout from "./components/ProtectedLayout";
 
 // Create the query client instance outside of the component to avoid recreating it on each render
 const queryClient = new QueryClient();
@@ -27,13 +26,11 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <Routes>
-          {/* Public routes - no auth required */}
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          
-          {/* Protected routes - wrapped in AuthProvider */}
-          <Route element={<AuthProvider><ProtectedLayout /></AuthProvider>}>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/" element={<Home />} />
             <Route path="/community" element={<Community />} />
@@ -41,11 +38,11 @@ const App = () => (
             <Route path="/progress" element={<Progress />} />
             <Route path="/products" element={<Products />} />
             <Route path="/profile" element={<Profile />} />
-          </Route>
-
-          {/* Fallback route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            
+            {/* Fallback route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </BrowserRouter>

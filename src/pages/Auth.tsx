@@ -1,10 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,7 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
-import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -40,7 +38,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -58,40 +55,6 @@ const Auth = () => {
       confirmPassword: ""
     }
   });
-
-  // Check if user is already authenticated
-  useEffect(() => {
-    console.log("Auth page: Checking authentication status");
-    
-    const checkAuth = async () => {
-      try {
-        setIsCheckingAuth(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("Auth page: Current user:", user?.id || "none");
-        
-        if (user) {
-          // User is authenticated, check if onboarding is complete
-          const onboardingComplete = await hasCompletedOnboarding(user.id);
-          console.log("Auth page: Onboarding complete:", onboardingComplete);
-          
-          // Redirect based on onboarding status
-          if (onboardingComplete) {
-            console.log("Auth page: Redirecting to home page, onboarding complete");
-            navigate("/", { replace: true });
-          } else {
-            console.log("Auth page: Redirecting to onboarding page, onboarding incomplete");
-            navigate("/onboarding", { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error("Auth page: Error checking authentication status:", error);
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-    
-    checkAuth();
-  }, [navigate]);
   
   const handleLogin = async (values: LoginFormValues) => {
     console.log("Auth page: Attempting login with email:", values.email);
@@ -110,8 +73,7 @@ const Auth = () => {
         description: "You've been logged in successfully."
       });
 
-      // After successful login, we let authentication state propagate
-      // The auth change will be picked up by onAuthStateChange and redirected appropriately
+      navigate('/');
     } catch (error: any) {
       console.error("Auth page: Login error:", error);
       toast({
@@ -150,6 +112,8 @@ const Auth = () => {
         title: "Account created!",
         description: "Please check your email to verify your account."
       });
+      
+      navigate('/');
     }).finally(() => {
       setIsLoading(false);
     });
@@ -185,14 +149,6 @@ const Auth = () => {
       setSocialLoading(null);
     });
   };
-  
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
   
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
     <motion.div initial={{
