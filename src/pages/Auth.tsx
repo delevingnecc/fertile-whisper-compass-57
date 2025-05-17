@@ -11,7 +11,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { SmartphoneIcon, CreditCard } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -207,25 +208,28 @@ const Auth = () => {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
+                  {/* Google Sign-In Button - Following Brand Guidelines */}
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => handleSocialLogin('google')}
                     disabled={!!socialLoading}
-                    className="w-full"
+                    className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
                   >
-                    <SmartphoneIcon className="mr-2 h-4 w-4" />
-                    Google
+                    <FontAwesomeIcon icon={faGoogle} className="text-[#4285F4] mr-2 h-4 w-4" />
+                    <span>Google</span>
                   </Button>
+                  
+                  {/* Apple Sign-In Button - Following Brand Guidelines */}
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => handleSocialLogin('apple')}
                     disabled={!!socialLoading}
-                    className="w-full"
+                    className="w-full bg-black hover:bg-gray-900 text-white border-black"
                   >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Apple
+                    <FontAwesomeIcon icon={faApple} className="mr-2 h-4 w-4" />
+                    <span>Apple</span>
                   </Button>
                 </div>
               </form>
@@ -291,25 +295,28 @@ const Auth = () => {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
+                  {/* Google Sign-In Button - Following Brand Guidelines */}
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => handleSocialLogin('google')}
                     disabled={!!socialLoading}
-                    className="w-full"
+                    className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
                   >
-                    <SmartphoneIcon className="mr-2 h-4 w-4" />
-                    Google
+                    <FontAwesomeIcon icon={faGoogle} className="text-[#4285F4] mr-2 h-4 w-4" />
+                    <span>Google</span>
                   </Button>
+                  
+                  {/* Apple Sign-In Button - Following Brand Guidelines */}
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => handleSocialLogin('apple')}
                     disabled={!!socialLoading}
-                    className="w-full"
+                    className="w-full bg-black hover:bg-gray-900 text-white border-black"
                   >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Apple
+                    <FontAwesomeIcon icon={faApple} className="mr-2 h-4 w-4" />
+                    <span>Apple</span>
                   </Button>
                 </div>
               </form>
