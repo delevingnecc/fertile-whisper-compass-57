@@ -46,11 +46,7 @@ const TestKitPromoCard = () => {
               Get comprehensive insights about your fertility with our clinically validated test kit.
             </p>
             <div className="flex items-center">
-              <span className="font-semibold text-primary-700">$149</span>
-              <span className="text-xs text-gray-500 ml-2 line-through">$199</span>
-              <span className="ml-2 bg-primary-100 text-primary-800 text-xs px-2 py-0.5 rounded-full">
-                25% OFF
-              </span>
+              <span className="font-semibold text-primary-700">$189</span>
             </div>
           </div>
         </div>
