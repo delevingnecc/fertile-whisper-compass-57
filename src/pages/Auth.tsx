@@ -86,7 +86,7 @@ const Auth = () => {
         description: "You've been logged in successfully."
       });
 
-      // Redirect to home page after successful login
+      // Navigate to home page after successful login
       navigate('/', { replace: true });
     } catch (error: any) {
       console.error("Auth page: Login error:", error);

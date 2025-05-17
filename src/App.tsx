@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Community from "./pages/Community";
 import Clinician from "./pages/Clinician";
@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import AuthCallback from "./pages/AuthCallback";
 import { AuthProvider } from "./contexts/AuthProvider";
+import AuthRoute from "./components/AuthRoute";
 
 // Create the query client instance outside of the component to avoid recreating it on each render
 const queryClient = new QueryClient();
@@ -26,23 +27,25 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding" element={<Onboarding />} />
+        <Routes>
+          {/* Public routes - accessible without authentication */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          
+          {/* Routes that require authentication */}
+          <Route element={<AuthProvider><AuthRoute /></AuthProvider>}>
             <Route path="/" element={<Home />} />
             <Route path="/community" element={<Community />} />
             <Route path="/clinician" element={<Clinician />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/products" element={<Products />} />
             <Route path="/profile" element={<Profile />} />
-            
-            {/* Fallback route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
+            <Route path="/onboarding" element={<Onboarding />} />
+          </Route>
+          
+          {/* Fallback route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </TooltipProvider>
     </QueryClientProvider>
   </BrowserRouter>

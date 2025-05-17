@@ -4,6 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { getProfile, UserProfile } from '@/integrations/supabase/profiles';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   session: Session | null;
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const { toast } = useToast();
   const isMounted = useRef(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     isMounted.current = true;
@@ -83,6 +85,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(newAuthUser);
 
         if (newAuthUser) {
+          // If this is a new login, redirect to home page
+          if (event === 'SIGNED_IN' && window.location.pathname.includes('/auth')) {
+            console.log("AuthProvider: New sign in detected, redirecting to home");
+            navigate('/');
+          }
           await fetchUserProfile(newAuthUser);
         } else {
           if (isMounted.current) {
@@ -123,13 +130,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted.current = false;
       subscription.unsubscribe();
     };
-  }, [toast, fetchUserProfile]);
+  }, [toast, fetchUserProfile, navigate]);
 
   const signOut = useCallback(async () => {
     try {
       console.log("AuthProvider: Signing out");
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Redirect to auth page after sign out
+      navigate('/auth');
     } catch (error) {
       console.error("AuthProvider: Error signing out:", error);
       toast({
@@ -138,7 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: (error instanceof Error ? error.message : "An error occurred while signing out."),
       });
     }
-  }, [toast]);
+  }, [toast, navigate]);
 
   const value = {
     session,
