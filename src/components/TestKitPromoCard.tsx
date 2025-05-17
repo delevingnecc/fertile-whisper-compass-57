@@ -58,7 +58,7 @@ const TestKitPromoCard = () => {
           disabled={isPurchasing || isPurchased}
           className="w-full"
         >
-          {isPurchasing ? 'Processing...' : isPurchased ? 'Purchased' : 'Buy Now'}
+          {isPurchasing ? 'Processing...' : isPurchased ? 'Purchased' : 'Start Your Journey Now'}
         </Button>
       </CardFooter>
     </Card>

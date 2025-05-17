@@ -49,13 +49,12 @@ const Progress = () => {
       return;
     }
 
-    const onChange = (index: number) => {
-      setCurrentSlide(index);
-    };
-
-    api.on("select", onChange);
+    api.on("select", (api) => {
+      setCurrentSlide(api.selectedScrollSnap());
+    });
+    
     return () => {
-      api.off("select", onChange);
+      api.off("select");
     };
   }, [api]);
 
@@ -211,331 +210,306 @@ const Progress = () => {
             }}
             className="w-full"
             setApi={setApi}
-            defaultIndex={currentSlide}
           >
-            <CarouselContent>
-              {/* Cycle Insights Card */}
-              <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base text-primary-300 flex items-center gap-2">
-                      Cycle Insights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="h-[140px]">
-                      <ChartContainer 
-                        config={{
-                          temp: { 
-                            label: "Temperature",
-                            color: '#7F56D9'
-                          },
-                          estrogen: { 
-                            label: "Estrogen", 
-                            color: '#F9DA72'
-                          },
-                          progesterone: { 
-                            label: "Progesterone", 
-                            color: '#53389E'
-                          },
-                        }}
-                        className="w-full h-full"
+            {/* Cycle Insights Card */}
+            <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base text-primary-300 flex items-center gap-2">
+                    Cycle Insights
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="h-[140px]">
+                    <ChartContainer 
+                      config={{
+                        temp: { 
+                          label: "Temperature",
+                          color: '#7F56D9'
+                        },
+                        estrogen: { 
+                          label: "Estrogen", 
+                          color: '#F9DA72'
+                        },
+                        progesterone: { 
+                          label: "Progesterone", 
+                          color: '#53389E'
+                        },
+                      }}
+                      className="w-full h-full"
+                    >
+                      <LineChart 
+                        data={cycleData.filter(d => d.day >= currentCycleDay - 7 && d.day <= currentCycleDay + 7)} 
+                        margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
                       >
-                        <LineChart 
-                          data={cycleData.filter(d => d.day >= currentCycleDay - 7 && d.day <= currentCycleDay + 7)} 
-                          margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
-                        >
-                          <XAxis 
-                            dataKey="day"
-                            tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip 
-                            content={<ChartTooltipContent />}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="temp" 
-                            stroke="var(--color-temp)" 
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#7F56D9' }}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="estrogen" 
-                            stroke="var(--color-estrogen)" 
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#F9DA72' }}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="progesterone" 
-                            stroke="var(--color-progesterone)" 
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#53389E' }}
-                          />
-                          <ReferenceLine
-                            x={currentCycleDay}
-                            stroke="rgba(255,255,255,0.4)"
-                            strokeDasharray="3 3"
-                          />
-                        </LineChart>
-                      </ChartContainer>
-                    </div>
-                    <p className="mt-3 text-sm text-accent-300 font-medium">
-                      You are in your estimated fertile window
-                    </p>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-              
-              {/* Heart Rate Variability Card */}
-              <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base text-primary-300 flex items-center gap-2">
-                      <HeartPulse className="h-4 w-4" />
-                      Heart Rate Variability
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="h-[140px]">
-                      <ChartContainer 
-                        config={{
-                          hrv: { 
-                            label: "HRV",
-                            color: '#F9DA72'
-                          }
-                        }}
-                        className="w-full h-full"
+                        <XAxis 
+                          dataKey="day"
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent />}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="temp" 
+                          stroke="var(--color-temp)" 
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, fill: '#7F56D9' }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="estrogen" 
+                          stroke="var(--color-estrogen)" 
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, fill: '#F9DA72' }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="progesterone" 
+                          stroke="var(--color-progesterone)" 
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, fill: '#53389E' }}
+                        />
+                        <ReferenceLine
+                          x={currentCycleDay}
+                          stroke="rgba(255,255,255,0.4)"
+                          strokeDasharray="3 3"
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  </div>
+                  <p className="mt-3 text-sm text-accent-300 font-medium">
+                    You are in your estimated fertile window
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+            
+            {/* Heart Rate Variability Card */}
+            <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base text-primary-300 flex items-center gap-2">
+                    <HeartPulse className="h-4 w-4" />
+                    Heart Rate Variability
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="h-[140px]">
+                    <ChartContainer 
+                      config={{
+                        hrv: { 
+                          label: "HRV",
+                          color: '#F9DA72'
+                        }
+                      }}
+                      className="w-full h-full"
+                    >
+                      <LineChart 
+                        data={hrvData} 
+                        margin={{ top: 15, right: 5, left: 0, bottom: 5 }}
                       >
-                        <LineChart 
-                          data={hrvData} 
-                          margin={{ top: 15, right: 5, left: 0, bottom: 5 }}
-                        >
-                          <XAxis 
-                            dataKey="day"
-                            tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip 
-                            content={<ChartTooltipContent />}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="hrv" 
-                            stroke="var(--color-hrv)" 
-                            strokeWidth={2}
-                            dot={{ fill: '#F9DA72', r: 3 }}
-                            activeDot={{ r: 5, fill: '#F9DA72' }}
-                          />
-                        </LineChart>
-                      </ChartContainer>
-                    </div>
-                    <div className="mt-3 flex justify-between items-center">
-                      <p className="text-sm text-accent-300 font-medium">Your HRV is recovering well today</p>
-                      <span className="text-lg font-bold">{hrvData[hrvData.length-1].hrv} ms</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-              
-              {/* Temperature Card */}
-              <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base text-primary-300 flex items-center gap-2">
-                      <Thermometer className="h-4 w-4" />
-                      Skin Temperature
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="h-[140px]">
-                      <ChartContainer 
-                        config={{
-                          deviation: { 
-                            label: "Temperature Deviation",
-                            color: '#7F56D9'
-                          }
-                        }}
-                        className="w-full h-full"
+                        <XAxis 
+                          dataKey="day"
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent />}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="hrv" 
+                          stroke="var(--color-hrv)" 
+                          strokeWidth={2}
+                          dot={{ fill: '#F9DA72', r: 3 }}
+                          activeDot={{ r: 5, fill: '#F9DA72' }}
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  </div>
+                  <div className="mt-3 flex justify-between items-center">
+                    <p className="text-sm text-accent-300 font-medium">Your HRV is recovering well today</p>
+                    <span className="text-lg font-bold">{hrvData[hrvData.length-1].hrv} ms</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+            
+            {/* Temperature Card */}
+            <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base text-primary-300 flex items-center gap-2">
+                    <Thermometer className="h-4 w-4" />
+                    Skin Temperature
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="h-[140px]">
+                    <ChartContainer 
+                      config={{
+                        deviation: { 
+                          label: "Temperature Deviation",
+                          color: '#7F56D9'
+                        }
+                      }}
+                      className="w-full h-full"
+                    >
+                      <BarChart
+                        data={tempData}
+                        margin={{ top: 15, right: 5, left: 0, bottom: 5 }}
                       >
-                        <BarChart
-                          data={tempData}
-                          margin={{ top: 15, right: 5, left: 0, bottom: 5 }}
-                        >
-                          <XAxis
-                            dataKey="day"
-                            tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis hide domain={[-0.3, 0.5]} />
-                          <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
-                          <ChartTooltip
-                            content={<ChartTooltipContent />}
-                          />
-                          <Bar
-                            dataKey="deviation"
-                            fill="#7F56D9"
-                            radius={[4, 4, 0, 0]}
-                            barSize={16}
-                          />
-                        </BarChart>
-                      </ChartContainer>
-                    </div>
-                    <p className="mt-3 text-sm text-accent-300 font-medium">
-                      Ovulatory shift detected
-                    </p>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-              
-              {/* Sleep Quality Card */}
-              <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base text-primary-300 flex items-center gap-2">
-                      <Bed className="h-4 w-4" />
-                      Sleep Quality
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="h-[140px]">
-                      <ChartContainer 
-                        config={{
-                          deep: { 
-                            label: "Deep Sleep",
-                            color: '#7F56D9'
-                          },
-                          rem: { 
-                            label: "REM Sleep", 
-                            color: '#F9DA72'
-                          }
-                        }}
-                        className="w-full h-full"
+                        <XAxis
+                          dataKey="day"
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis hide domain={[-0.3, 0.5]} />
+                        <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
+                        <ChartTooltip
+                          content={<ChartTooltipContent />}
+                        />
+                        <Bar
+                          dataKey="deviation"
+                          fill="#7F56D9"
+                          radius={[4, 4, 0, 0]}
+                          barSize={16}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  </div>
+                  <p className="mt-3 text-sm text-accent-300 font-medium">
+                    Ovulatory shift detected
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+            
+            {/* Sleep Quality Card */}
+            <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base text-primary-300 flex items-center gap-2">
+                    <Bed className="h-4 w-4" />
+                    Sleep Quality
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="h-[140px]">
+                    <ChartContainer 
+                      config={{
+                        deep: { 
+                          label: "Deep Sleep",
+                          color: '#7F56D9'
+                        },
+                        rem: { 
+                          label: "REM Sleep", 
+                          color: '#F9DA72'
+                        }
+                      }}
+                      className="w-full h-full"
+                    >
+                      <BarChart
+                        data={sleepData}
+                        margin={{ top: 15, right: 5, left: 0, bottom: 5 }}
+                        barGap={2}
                       >
-                        <BarChart
-                          data={sleepData}
-                          margin={{ top: 15, right: 5, left: 0, bottom: 5 }}
-                          barGap={2}
-                        >
-                          <XAxis
-                            dataKey="day"
-                            tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis hide domain={[0, 3]} />
-                          <ChartTooltip
-                            content={<ChartTooltipContent />}
-                          />
-                          <Bar
-                            dataKey="deep"
-                            fill="#7F56D9"
-                            radius={[4, 4, 0, 0]}
-                            barSize={10}
-                          />
-                          <Bar
-                            dataKey="rem"
-                            fill="#F9DA72"
-                            radius={[4, 4, 0, 0]}
-                            barSize={10}
-                          />
-                        </BarChart>
-                      </ChartContainer>
+                        <XAxis
+                          dataKey="day"
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis hide domain={[0, 3]} />
+                        <ChartTooltip
+                          content={<ChartTooltipContent />}
+                        />
+                        <Bar
+                          dataKey="deep"
+                          fill="#7F56D9"
+                          radius={[4, 4, 0, 0]}
+                          barSize={10}
+                        />
+                        <Bar
+                          dataKey="rem"
+                          fill="#F9DA72"
+                          radius={[4, 4, 0, 0]}
+                          barSize={10}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  </div>
+                  <p className="mt-3 text-sm text-accent-300 font-medium">
+                    You're getting consistent deep sleep
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+            
+            {/* Readiness Score Card */}
+            <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base text-primary-300 flex items-center gap-2">
+                    <Gauge className="h-4 w-4" />
+                    Readiness Score
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-4xl font-bold">{readinessScore}</div>
+                    <div className="w-1/2">
+                      <ProgressBar value={readinessScore} className="h-3 bg-gray-700" />
                     </div>
-                    <p className="mt-3 text-sm text-accent-300 font-medium">
-                      You're getting consistent deep sleep
-                    </p>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-              
-              {/* Readiness Score Card */}
-              <CarouselItem className="sm:basis-4/5 lg:basis-3/5">
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base text-primary-300 flex items-center gap-2">
-                      <Gauge className="h-4 w-4" />
-                      Readiness Score
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-4xl font-bold">{readinessScore}</div>
-                      <div className="w-1/2">
-                        <ProgressBar value={readinessScore} className="h-3 bg-gray-700" />
-                      </div>
-                    </div>
-                    <div className="h-[90px]">
-                      <ChartContainer 
-                        config={{
-                          score: { 
-                            label: "Score",
-                            color: '#F9DA72'
-                          }
-                        }}
-                        className="w-full h-full"
+                  </div>
+                  <div className="h-[90px]">
+                    <ChartContainer 
+                      config={{
+                        score: { 
+                          label: "Score",
+                          color: '#F9DA72'
+                        }
+                      }}
+                      className="w-full h-full"
+                    >
+                      <LineChart 
+                        data={readinessHistory} 
+                        margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
                       >
-                        <LineChart 
-                          data={readinessHistory} 
-                          margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
-                        >
-                          <XAxis 
-                            dataKey="day"
-                            tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip 
-                            content={<ChartTooltipContent />}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="score" 
-                            stroke="var(--color-score)" 
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#F9DA72' }}
-                          />
-                        </LineChart>
-                      </ChartContainer>
-                    </div>
-                    <p className="mt-2 text-sm text-accent-300 font-medium">
-                      Your body is ready to recover today
-                    </p>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            </CarouselContent>
-
-            <div className="mt-2 flex justify-center gap-1">
-              {slideData.map((slide, index) => (
-                <button 
-                  key={index}
-                  onClick={() => api?.scrollTo(index)}
-                  className="focus:outline-none"
-                  aria-label={`View ${slide.title} chart`}
-                >
-                  <div 
-                    className={`h-1 w-8 rounded-full transition-colors ${
-                      index === currentSlide ? 'bg-primary-400' : 'bg-gray-600 hover:bg-gray-500'
-                    }`}
-                  />
-                  {index === currentSlide && (
-                    <div className="mt-2 text-xs text-gray-300 font-medium text-center whitespace-nowrap">
-                      {slide.title}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
+                        <XAxis 
+                          dataKey="day"
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 10}}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent />}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="score" 
+                          stroke="var(--color-score)" 
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, fill: '#F9DA72' }}
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  </div>
+                  <p className="mt-2 text-sm text-accent-300 font-medium">
+                    Your body is ready to recover today
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
           </Carousel>
         </div>
         
