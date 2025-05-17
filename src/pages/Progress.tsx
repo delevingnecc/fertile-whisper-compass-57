@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -27,7 +28,7 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from "@/components/ui/chart";
-import { Progress } from "@/components/ui/progress";
+import { Progress as ProgressBar } from "@/components/ui/progress";
 import {
   Thermometer,
   HeartPulse,
@@ -436,7 +437,7 @@ const Progress = () => {
                       <div className="flex items-center justify-between mb-4">
                         <div className="text-4xl font-bold">{readinessScore}</div>
                         <div className="w-1/2">
-                          <Progress value={readinessScore} className="h-3 bg-gray-700" />
+                          <ProgressBar value={readinessScore} className="h-3 bg-gray-700" />
                         </div>
                       </div>
                       <div className="h-[90px]">
