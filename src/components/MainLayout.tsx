@@ -17,7 +17,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen h-screen bg-white">
       {!isQuizPrompt && <Header />}
-      <main className={`flex-1 ${!isQuizPrompt ? 'pt-16' : ''} ${!hideNavigation ? 'pb-16' : ''}`}>
+      <main className={`flex-1 ${!isQuizPrompt ? 'pt-16' : ''} ${!hideNavigation ? 'pb-16' : ''} overflow-hidden`}>
         <div className="h-full overflow-y-auto">
           {children || <Outlet />}
         </div>

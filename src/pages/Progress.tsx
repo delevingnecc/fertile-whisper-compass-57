@@ -4,6 +4,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import TestKitPromoCard from '@/components/TestKitPromoCard';
 import { 
   LineChart, 
   Line, 
@@ -169,6 +170,9 @@ const Progress = () => {
             <h2 className="text-xl font-semibold mb-1">Hello, Sarah</h2>
             <p className="text-sm text-gray-300">Cycle Day {currentCycleDay} • May 18, 2023</p>
           </div>
+          
+          {/* Test Kit Promotional Card */}
+          <TestKitPromoCard />
           
           <Carousel
             opts={{
