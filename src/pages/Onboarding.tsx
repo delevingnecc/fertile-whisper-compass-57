@@ -289,13 +289,13 @@ const Onboarding = () => {
 
             console.log(`[DEBUG] Profile successfully saved`);
             toast({
-                title: "Onboarding complete!",
-                description: "Welcome to Genesis, " + values.name + "!"
+                title: "Profile saved!",
+                description: "Almost done! Let's complete your profile."
             });
 
-            // Redirect to home page
-            console.log(`[DEBUG] Redirecting to home page`);
-            navigate('/');
+            // Navigate to quiz prompt instead of home
+            console.log(`[DEBUG] Redirecting to quiz prompt`);
+            navigate('/quiz-prompt');
         } catch (error: any) {
             console.error('[DEBUG] Error saving profile:', error);
             toast({

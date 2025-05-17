@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import QuizPrompt from "./pages/QuizPrompt";
 import AuthCallback from "./pages/AuthCallback";
 import { AuthProvider } from "./contexts/AuthProvider";
 import AuthGuard from "./components/AuthGuard";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/products" element={<Products />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/quiz-prompt" element={<QuizPrompt />} />
             </Route>
             
             {/* 404 page */}
