@@ -250,7 +250,7 @@ const Auth = () => {
                 className="h-20 w-auto" 
               />
             </motion.div>
-            <h1 className="text-2xl font-bold text-primary-800">Welcome to FertilityPal</h1>
+            <h1 className="text-2xl font-bold text-primary-800">Welcome to Genesis</h1>
             <p className="text-gray-600 mt-1">Your personal fertility companion</p>
           </div>
           
