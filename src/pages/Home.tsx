@@ -213,7 +213,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className={`fixed ${isMobile ? 'bottom-16' : 'bottom-16'} left-0 right-0`}>
+      <div className={`fixed ${isMobile ? 'bottom-20' : 'bottom-16'} left-0 right-0`}>
         <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
 
