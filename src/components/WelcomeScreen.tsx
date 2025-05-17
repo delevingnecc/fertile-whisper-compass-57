@@ -22,7 +22,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
           transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
         >
           <img 
-            src="/elephant-mascot.png" 
+            src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" 
             alt="Elephant mascot" 
             className="h-40 w-auto"
           />
