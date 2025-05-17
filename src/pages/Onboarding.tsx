@@ -284,7 +284,8 @@ const Onboarding = () => {
                 birthdate: parsedDate,
                 gender: values.gender,
                 onboarding_completed: true,
-                goals: selectedGoals
+                goals: selectedGoals,
+                has_seen_welcome: false // Initialize has_seen_welcome as false
             });
 
             console.log(`[DEBUG] Profile successfully saved`);

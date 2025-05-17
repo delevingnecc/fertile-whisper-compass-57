@@ -43,7 +43,7 @@ export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'u
             gender: profile.gender,
             onboarding_completed: profile.onboarding_completed,
             goals: profile.goals || [],
-            has_seen_welcome: profile.has_seen_welcome || false
+            has_seen_welcome: profile.has_seen_welcome
         }, {
             onConflict: 'id'
         });
