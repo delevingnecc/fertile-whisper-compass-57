@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 
 const AuthCallback = () => {
@@ -10,10 +10,11 @@ const AuthCallback = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
     const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
+    const [hasChecked, setHasChecked] = useState(false);
 
     useEffect(() => {
-        // Only run this effect once authentication is loaded
-        if (isLoading) return;
+        // Only run this effect once authentication is loaded and only once
+        if (isLoading || hasChecked) return;
 
         const handleRedirect = async () => {
             setIsCheckingOnboarding(true);
@@ -28,16 +29,17 @@ const AuthCallback = () => {
 
                 // Check if user has already completed onboarding
                 const completed = await hasCompletedOnboarding(user.id);
-
+                
+                setHasChecked(true);
                 console.log('[AuthCallback] Onboarding status:', { completed });
 
                 // Decide where to redirect
                 if (!completed) {
                     console.log('[AuthCallback] Redirecting to onboarding');
-                    navigate('/onboarding');
+                    navigate('/onboarding', { replace: true });
                 } else {
                     console.log('[AuthCallback] Redirecting to home');
-                    navigate('/');
+                    navigate('/', { replace: true });
                 }
 
                 toast({
@@ -51,14 +53,14 @@ const AuthCallback = () => {
                     title: "Authentication Failed",
                     description: "There was a problem with your authentication. Please try again."
                 });
-                navigate('/auth');
+                navigate('/auth', { replace: true });
             } finally {
                 setIsCheckingOnboarding(false);
             }
         };
 
         handleRedirect();
-    }, [user, isLoading, navigate, toast]);
+    }, [user, isLoading, navigate, toast, hasChecked]);
 
     // Show loading spinner while processing
     return (
@@ -68,4 +70,4 @@ const AuthCallback = () => {
     );
 };
 
-export default AuthCallback; 
+export default AuthCallback;

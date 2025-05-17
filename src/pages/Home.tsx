@@ -15,41 +15,47 @@ const Home = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [assistantName, setAssistantName] = useState('Eve');
+  const [assistantName] = useState('Eve');
   const [userName, setUserName] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const [isInitialized, setIsInitialized] = useState(false);
+  const initRef = useRef(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user || isInitialized) return;
+    // Prevent multiple initializations
+    if (!user || initRef.current) return;
     
     const fetchUserProfile = async () => {
       try {
+        initRef.current = true;
+        console.log('Fetching user profile for:', user.id);
         const profile = await getProfile(user.id);
         if (profile) {
-          // Set user name from profile
           setUserName(profile.name);
 
-          // Check if the user has seen the welcome screen before using localStorage
+          // Check if the user has seen the welcome screen
           const hasVisitedChat = localStorage.getItem('hasVisitedChat') === 'true';
           if (hasVisitedChat) {
             setShowWelcome(false);
             
-            // Get or create a conversation
+            // Get or create conversation
             const storedConversationId = localStorage.getItem('currentConversationId');
             if (storedConversationId) {
               setConversationId(storedConversationId);
-              await loadMessages(storedConversationId);
+              try {
+                await loadMessages(storedConversationId);
+              } catch (error) {
+                console.error('Failed to load messages, creating new conversation', error);
+                await initializeNewConversation();
+              }
             } else {
               await initializeNewConversation();
             }
           }
-          setIsInitialized(true);
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -58,12 +64,11 @@ const Home = () => {
           description: 'Failed to load user profile',
           variant: 'destructive'
         });
-        setIsInitialized(true);
       }
     };
     
     fetchUserProfile();
-  }, [user, toast, isInitialized]);
+  }, [user, toast]);
 
   const loadMessages = async (convId: string) => {
     try {
@@ -72,22 +77,14 @@ const Home = () => {
 
       // If no messages found, add a welcome message
       if (chatMessages.length === 0) {
-        const welcomeMessage = `Hello! I'm Eve, your fertility companion. How are you feeling today?`;
-        
-        // Save welcome message to database directly
-        const savedMessage = await saveMessage(convId, welcomeMessage, 'ai');
-        
-        setMessages([savedMessage]);
+        await initializeNewConversation();
       } else {
         setMessages(chatMessages);
       }
     } catch (error) {
       console.error('Error loading messages:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load chat messages',
-        variant: 'destructive'
-      });
+      // Don't show error toast here to prevent cascading errors
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -99,13 +96,11 @@ const Home = () => {
       setConversationId(newConversationId);
       localStorage.setItem('currentConversationId', newConversationId);
 
-      // Create welcome message and save it directly to the database
+      // Create welcome message
       const welcomeMessage = `Hello! I'm Eve, your fertility companion. How are you feeling today?`;
       const savedMessage = await saveMessage(newConversationId, welcomeMessage, 'ai');
       
-      // Set the saved message to state
       setMessages([savedMessage]);
-      
     } catch (error) {
       console.error('Error creating conversation:', error);
       toast({
@@ -160,16 +155,6 @@ const Home = () => {
   };
 
   const handleGetStarted = async () => {
-    if (user) {
-      try {
-        // We're no longer updating has_seen_welcome in the database
-        // Instead, we'll rely solely on localStorage
-      } catch (error) {
-        console.error('Error updating welcome screen status:', error);
-      }
-    }
-    
-    // Mark that the user has visited the chat before
     localStorage.setItem('hasVisitedChat', 'true');
     setShowWelcome(false);
 
@@ -190,17 +175,13 @@ const Home = () => {
           ) : (
             <>
               {messages.map(message => <ChatMessage key={message.id} message={message} assistantName={assistantName} userName={userName} />)}
-              {isLoading && <div className="flex items-center space-x-2 ml-10">
-                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
-                animationDelay: "0ms"
-              }}></div>
-                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
-                animationDelay: "200ms"
-              }}></div>
-                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{
-                animationDelay: "400ms"
-              }}></div>
-                </div>}
+              {isLoading && (
+                <div className="flex items-center space-x-2 ml-10">
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{animationDelay: "0ms"}}></div>
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{animationDelay: "200ms"}}></div>
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{animationDelay: "400ms"}}></div>
+                </div>
+              )}
             </>
           )}
           <div ref={messagesEndRef} />

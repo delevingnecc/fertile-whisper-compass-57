@@ -1,5 +1,5 @@
 
-import { ReactNode, useEffect, useState, memo } from 'react';
+import { ReactNode, useEffect, useState, memo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
@@ -14,14 +14,14 @@ const AuthGuard = memo(({ children }: AuthGuardProps) => {
   const location = useLocation();
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
-  const [checkInitiated, setCheckInitiated] = useState(false);
+  const checkInitiatedRef = useRef(false);
 
   useEffect(() => {
     console.log('[AuthGuard] Checking auth status', { 
       isLoading, 
       userId: user?.id, 
       path: location.pathname,
-      checkInitiated
+      checkInitiated: checkInitiatedRef.current
     });
     
     // Skip check if we're already on an auth page to prevent redirect loops
@@ -50,8 +50,8 @@ const AuthGuard = memo(({ children }: AuthGuardProps) => {
     }
 
     // Only run the onboarding check once per authentication to prevent loops
-    if (!checkInitiated && !isCheckingOnboarding) {
-      setCheckInitiated(true);
+    if (!checkInitiatedRef.current && !isCheckingOnboarding) {
+      checkInitiatedRef.current = true;
       
       // If we get here, the user is authenticated and not on the onboarding page
       // Check if they have completed onboarding
@@ -80,12 +80,13 @@ const AuthGuard = memo(({ children }: AuthGuardProps) => {
 
       checkOnboardingStatus();
     }
-  }, [user, isLoading, navigate, location.pathname, checkInitiated, isCheckingOnboarding]);
+  }, [user, isLoading, navigate, location.pathname, isCheckingOnboarding]);
 
   // Reset checkInitiated when user changes
   useEffect(() => {
-    // If user changes, reset the check
-    setCheckInitiated(false);
+    if (user?.id) {
+      checkInitiatedRef.current = false;
+    }
   }, [user?.id]);
 
   // Don't render anything while checking authentication or onboarding status
