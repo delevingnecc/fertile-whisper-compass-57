@@ -1,13 +1,11 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/components/ui/use-toast';
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 import { supabase } from '@/integrations/supabase/client';
 
 const AuthCallback = () => {
-    const { user, isLoading } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
     const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
@@ -39,15 +37,13 @@ const AuthCallback = () => {
         
         handleHashParameters();
         
-        // Only run this effect once authentication is loaded
-        if (isLoading) {
-            console.log("AuthCallback: Auth state still loading");
-            return;
-        }
-
+        // Check if the user is authenticated
         const handleRedirect = async () => {
             setIsCheckingOnboarding(true);
             try {
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser();
+                
                 // Check if user is authenticated
                 if (!user) {
                     console.log("AuthCallback: No authenticated user");
@@ -87,7 +83,7 @@ const AuthCallback = () => {
         };
 
         handleRedirect();
-    }, [user, isLoading, navigate, toast]);
+    }, [navigate, toast]);
 
     // Show loading spinner while processing
     return (

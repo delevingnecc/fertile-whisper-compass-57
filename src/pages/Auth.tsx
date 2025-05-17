@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,6 @@ import { useForm } from "react-hook-form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
-import { useAuth } from '@/contexts/AuthProvider';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -38,9 +38,9 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -61,12 +61,15 @@ const Auth = () => {
 
   // Check if user is already authenticated
   useEffect(() => {
-    console.log("Auth page: Checking if user is already authenticated:", user?.id || "none");
-    
-    if (user) {
-      // User is already authenticated, check if onboarding is complete
-      const checkOnboarding = async () => {
-        try {
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log("Auth page: Current user:", user?.id || "none");
+        
+        if (user) {
+          setCurrentUser(user);
+          
+          // User is authenticated, check if onboarding is complete
           const onboardingComplete = await hasCompletedOnboarding(user.id);
           console.log("Auth page: Onboarding complete:", onboardingComplete);
           
@@ -76,14 +79,14 @@ const Auth = () => {
           } else {
             navigate("/onboarding", { replace: true });
           }
-        } catch (error) {
-          console.error("Auth page: Error checking onboarding status:", error);
         }
-      };
-      
-      checkOnboarding();
-    }
-  }, [user, navigate]);
+      } catch (error) {
+        console.error("Auth page: Error checking authentication status:", error);
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
   
   const handleLogin = async (values: LoginFormValues) => {
     console.log("Auth page: Attempting login with email:", values.email);
