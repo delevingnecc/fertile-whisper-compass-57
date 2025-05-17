@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -217,7 +216,7 @@ const Onboarding = () => {
         <div className="min-h-screen flex flex-col bg-white">
             {/* Subtle pattern top and bottom */}
             <div className="absolute top-0 left-0 w-full h-12 bg-primary-50/30 z-0" />
-            <div className="absolute bottom-0 left-0 w-full h-24 bg-primary-50/30 z-0" />
+            
 
             {/* Small logo */}
             <div className="pt-6 px-6 pb-2 z-10">
