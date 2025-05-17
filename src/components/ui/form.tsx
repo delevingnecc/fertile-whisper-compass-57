@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -88,12 +89,12 @@ const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
 >(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField()
+  const { formItemId } = useFormField()
 
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-destructive", className)}
+      className={cn(className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -145,9 +146,22 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
+  const [showError, setShowError] = React.useState(false)
   const body = error ? String(error?.message) : children
 
-  if (!body) {
+  // Get current field
+  const { name } = useFormField();
+  const { trigger, formState } = useFormContext();
+  
+  // Track field interactions to only show errors after blur
+  React.useEffect(() => {
+    // Reset error visibility when the field changes or errors are reset
+    if (!formState.errors[name]) {
+      setShowError(false);
+    }
+  }, [formState.errors, name]);
+  
+  if (!body || !showError) {
     return null
   }
 
@@ -155,7 +169,7 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
+      className={cn("text-sm font-medium text-destructive mt-1", className)}
       {...props}
     >
       {body}
@@ -174,3 +188,4 @@ export {
   FormMessage,
   FormField,
 }
+

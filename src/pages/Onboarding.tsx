@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -347,6 +346,10 @@ const Onboarding = () => {
                                                     placeholder="Enter your name"
                                                     className="text-lg py-6 px-4 rounded-xl border-gray-300"
                                                     {...field}
+                                                    onBlur={(e) => {
+                                                        field.onBlur();
+                                                        form.trigger('name');
+                                                    }}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -400,6 +403,10 @@ const Onboarding = () => {
                                                     placeholder="DD/MM/YYYY"
                                                     className="text-lg py-6 px-4 rounded-xl border-gray-300"
                                                     {...field}
+                                                    onBlur={(e) => {
+                                                        field.onBlur();
+                                                        form.trigger('birthdate');
+                                                    }}
                                                 />
                                             </FormControl>
                                             <p className="text-sm text-gray-500 mt-1">
@@ -452,7 +459,10 @@ const Onboarding = () => {
                                         <FormItem className="mb-4">
                                             <FormControl>
                                                 <RadioGroup
-                                                    onValueChange={handleGenderChange}
+                                                    onValueChange={(value) => {
+                                                        handleGenderChange(value);
+                                                        form.trigger('gender');
+                                                    }}
                                                     defaultValue={field.value}
                                                     className="flex flex-col space-y-3"
                                                 >
@@ -582,11 +592,15 @@ const Onboarding = () => {
                                             </div>
                                         ))}
                                     </div>
-                                    {form.formState.errors.goals && (
-                                        <p className="text-sm font-medium text-red-500 mt-2">
-                                            {form.formState.errors.goals.message}
-                                        </p>
-                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="goals"
+                                        render={() => (
+                                            <FormItem>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
 
                                 <div className="mt-auto pt-6 pb-10 mb-4">
