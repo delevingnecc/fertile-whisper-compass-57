@@ -71,41 +71,61 @@ const Onboarding = () => {
         console.log('[Onboarding] Step changed to:', step);
     }, [step]);
 
+    // Debug initial render
+    useEffect(() => {
+        console.log('[Onboarding] Component mounted. User:', user?.id);
+    }, []);
+
     // This is the fixed nextStep function that will be used by all continue buttons
     const nextStep = async (fieldToValidate?: 'name' | 'birthdate' | 'gender') => {
-        console.log(`Attempting to move to next step. Current step: ${step}, validating: ${fieldToValidate}`);
+        console.log(`[DEBUG] nextStep called with fieldToValidate:`, fieldToValidate);
+        console.log(`[DEBUG] Current step:`, step);
+        console.log(`[DEBUG] Current form values:`, form.getValues());
+        console.log(`[DEBUG] Form errors:`, form.formState.errors);
         
         if (fieldToValidate) {
+            console.log(`[DEBUG] Triggering validation for field:`, fieldToValidate);
             const isValid = await form.trigger(fieldToValidate);
-            console.log(`Validation result for ${fieldToValidate}: ${isValid}`);
+            console.log(`[DEBUG] Validation result for ${fieldToValidate}:`, isValid);
             
             if (!isValid) {
-                console.log(`Validation failed for ${fieldToValidate}, not advancing`);
+                console.log(`[DEBUG] Validation failed for ${fieldToValidate}, not advancing`);
                 return;
             }
         }
         
-        console.log(`Advancing from step ${step} to step ${step + 1}`);
-        setStep(prevStep => prevStep + 1);
+        console.log(`[DEBUG] All validations passed, advancing from step ${step} to step ${step + 1}`);
+        setStep(prevStep => {
+            const newStep = prevStep + 1;
+            console.log(`[DEBUG] Step state updated from ${prevStep} to ${newStep}`);
+            return newStep;
+        });
     };
 
     const prevStep = () => {
+        console.log(`[DEBUG] prevStep called. Current step: ${step}`);
         if (step > 1) {
             setStep(step - 1);
+            console.log(`[DEBUG] Moving back to step ${step - 1}`);
         }
     };
 
     const handleGenderChange = (value: string) => {
+        console.log(`[DEBUG] Gender changed to: ${value}`);
         form.setValue('gender', value);
         setShowNonBinaryOptions(value === 'nonbinary');
     };
 
     const handleNonBinaryOptionSelect = (value: string) => {
+        console.log(`[DEBUG] Non-binary option selected: ${value}`);
         form.setValue('gender', value);
     };
 
     const onSubmit = async (values: OnboardingValues) => {
+        console.log(`[DEBUG] Form submitted with values:`, values);
+        
         if (!user) {
+            console.error(`[DEBUG] No user found when submitting form`);
             toast({
                 title: "Error",
                 description: "You must be logged in to complete onboarding",
@@ -117,6 +137,7 @@ const Onboarding = () => {
         setIsSubmitting(true);
 
         try {
+            console.log(`[DEBUG] Attempting to save profile for user:`, user.id);
             // Save user profile data to Supabase
             await upsertProfile({
                 id: user.id,
@@ -126,15 +147,17 @@ const Onboarding = () => {
                 onboarding_completed: true
             });
 
+            console.log(`[DEBUG] Profile successfully saved`);
             toast({
                 title: "Onboarding complete!",
                 description: "Welcome to FertilityPal, " + values.name + "!"
             });
 
             // Redirect to home page
+            console.log(`[DEBUG] Redirecting to home page`);
             navigate('/');
         } catch (error: any) {
-            console.error('Error saving profile:', error);
+            console.error('[DEBUG] Error saving profile:', error);
             toast({
                 title: "Error",
                 description: error.message || "Failed to save your information. Please try again.",
@@ -159,6 +182,20 @@ const Onboarding = () => {
             title: "Just one more thing...",
             subtitle: "Which best describes you?"
         }
+    };
+
+    console.log(`[DEBUG] Rendering onboarding step:`, step);
+    console.log(`[DEBUG] Form state:`, { 
+        isDirty: form.formState.isDirty,
+        isValid: form.formState.isValid,
+        errors: form.formState.errors
+    });
+
+    const handleNextStepButtonClick = () => {
+        console.log(`[DEBUG] Continue button clicked for step ${step}`);
+        const fieldToValidate = step === 1 ? 'name' : step === 2 ? 'birthdate' : 'gender';
+        console.log(`[DEBUG] Will validate field: ${fieldToValidate}`);
+        nextStep(fieldToValidate as 'name' | 'birthdate' | 'gender');
     };
 
     return (
@@ -230,8 +267,9 @@ const Onboarding = () => {
                                 <div className="mt-auto pt-6 pb-10">
                                     <Button
                                         type="button"
-                                        onClick={() => nextStep('name')}
+                                        onClick={handleNextStepButtonClick}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        data-testid="continue-button-step1"
                                     >
                                         Continue
                                     </Button>
@@ -305,8 +343,9 @@ const Onboarding = () => {
                                 <div className="mt-auto pt-6 pb-10">
                                     <Button
                                         type="button"
-                                        onClick={() => nextStep('birthdate')}
+                                        onClick={handleNextStepButtonClick}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        data-testid="continue-button-step2"
                                     >
                                         Continue
                                     </Button>
@@ -422,6 +461,7 @@ const Onboarding = () => {
                                         type="submit"
                                         disabled={isSubmitting}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        data-testid="complete-button"
                                     >
                                         {isSubmitting ? "Saving..." : "Complete"}
                                     </Button>
