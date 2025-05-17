@@ -71,43 +71,22 @@ const Onboarding = () => {
         console.log('[Onboarding] Step changed to:', step);
     }, [step]);
 
-    const nextStep = () => {
-        console.log('nextStep called, current step:', step);
-
-        if (step < 3) {
-            // Force input validation before proceeding
-            if (step === 1) {
-                const nameValue = form.getValues('name');
-                console.log('Step 1 validation - name value:', nameValue);
-
-                if (!nameValue || nameValue.length < 2) {
-                    console.log('Name validation failed, showing error');
-                    form.setError('name', {
-                        type: 'manual',
-                        message: 'Please enter your name'
-                    });
-                    return; // Don't proceed if validation fails
-                }
-                console.log('Name validation passed, proceeding to next step');
-            } else if (step === 2) {
-                const birthdate = form.getValues('birthdate');
-                console.log('Step 2 validation - birthdate value:', birthdate);
-
-                if (!birthdate) {
-                    console.log('Birthdate validation failed, showing error');
-                    form.setError('birthdate', {
-                        type: 'manual',
-                        message: 'Please select your birthday'
-                    });
-                    return; // Don't proceed if validation fails
-                }
-                console.log('Birthdate validation passed, proceeding to next step');
+    // This is the fixed nextStep function that will be used by all continue buttons
+    const nextStep = async (fieldToValidate?: 'name' | 'birthdate' | 'gender') => {
+        console.log(`Attempting to move to next step. Current step: ${step}, validating: ${fieldToValidate}`);
+        
+        if (fieldToValidate) {
+            const isValid = await form.trigger(fieldToValidate);
+            console.log(`Validation result for ${fieldToValidate}: ${isValid}`);
+            
+            if (!isValid) {
+                console.log(`Validation failed for ${fieldToValidate}, not advancing`);
+                return;
             }
-
-            // If validation passes, proceed to next step
-            console.log('Setting step from', step, 'to', step + 1);
-            setStep(step + 1);
         }
+        
+        console.log(`Advancing from step ${step} to step ${step + 1}`);
+        setStep(prevStep => prevStep + 1);
     };
 
     const prevStep = () => {
@@ -163,61 +142,6 @@ const Onboarding = () => {
             });
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    // Restore the intended handleStep1Continue but with more logging
-    const handleStep1Continue = async () => {
-        console.log('[handleStep1Continue] Attempting to move to step 2 or validate...');
-
-        // For testing, let's try to set state first, then validate.
-        // This helps isolate if setStep itself is working.
-        // setStep(2); // Temporarily try this to see if UI changes to step 2
-        // console.log('[handleStep1Continue] Called setStep(2). Current form values:', form.getValues());
-
-        const nameValue = form.getValues('name');
-        if (!nameValue || nameValue.length < 2) {
-            console.log('[handleStep1Continue] Name is invalid (local check). Setting error.');
-            form.setError('name', {
-                type: 'manual',
-                message: 'Please enter your name'
-            });
-            form.setFocus('name');
-            return; // Stop if basic local validation fails
-        }
-
-        console.log('[handleStep1Continue] Local name check passed. Now trying form.trigger().');
-        try {
-            const isValid = await form.trigger('name'); // Trigger validation for the name field
-            console.log('[handleStep1Continue] form.trigger("name") result:', isValid);
-            if (isValid) {
-                console.log('[handleStep1Continue] Name is valid according to form.trigger(). Moving to step 2.');
-                setStep(2);
-            } else {
-                console.log('[handleStep1Continue] Name is invalid according to form.trigger(). Error should be displayed.');
-                form.setFocus('name'); // Focus the input if validation fails
-            }
-        } catch (error) {
-            console.error('[handleStep1Continue] Error during form.trigger("name"):', error);
-            toast({
-                title: "Validation Error",
-                description: "Could not validate your name. Please try again.",
-                variant: "destructive"
-            });
-        }
-    };
-
-    // Updated onClick for the second step's continue button (for consistency)
-    const handleStep2Continue = async () => {
-        console.log('[Step 2 Button] Clicked. Validating birthdate...');
-        const isValid = await form.trigger('birthdate');
-        console.log('[Step 2 Button] Birthdate validation result:', isValid);
-        if (isValid) {
-            console.log('[Step 2 Button] Birthdate is valid. Moving to step 3.');
-            setStep(3);
-        } else {
-            console.log('[Step 2 Button] Birthdate is invalid. Error should be displayed.');
-            // Optionally focus, though calendar might not be directly focusable this way
         }
     };
 
@@ -306,7 +230,7 @@ const Onboarding = () => {
                                 <div className="mt-auto pt-6 pb-10">
                                     <Button
                                         type="button"
-                                        onClick={handleStep1Continue}
+                                        onClick={() => nextStep('name')}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                     >
                                         Continue
@@ -381,7 +305,7 @@ const Onboarding = () => {
                                 <div className="mt-auto pt-6 pb-10">
                                     <Button
                                         type="button"
-                                        onClick={handleStep2Continue}
+                                        onClick={() => nextStep('birthdate')}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                     >
                                         Continue
@@ -511,4 +435,4 @@ const Onboarding = () => {
     );
 };
 
-export default Onboarding; 
+export default Onboarding;
