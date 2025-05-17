@@ -25,11 +25,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled }) => {
   return (
     <form 
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 p-3 bg-white border-t border-gray-200"
+      className={`flex items-center gap-2 p-3 bg-white border-t border-gray-200 ${isMobile ? 'pb-6' : 'pb-4'}`}
       style={{ 
         boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
-        paddingBottom: isMobile ? '16px' : '16px',
-        marginBottom: '-2px', // Changed from 2px to -2px to lower the input box
       }}
     >
       <Input

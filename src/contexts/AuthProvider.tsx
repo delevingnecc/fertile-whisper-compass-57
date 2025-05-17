@@ -1,57 +1,63 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { UserProfile } from '@/integrations/supabase/profiles';
-import { useAuthState } from '@/hooks/useAuthState';
-import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  userProfile: UserProfile | null;
   isLoading: boolean;
-  isProfileLoading: boolean;
   signOut: () => Promise<void>;
-  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { user, session, isLoading, signOut: baseSignOut } = useAuthState();
-  const { userProfile, isProfileLoading, refreshUserProfile } = useUserProfile(user);
 
-  // Wrap the signOut function to add toast functionality
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        // Only synchronous state updates here
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        if (event === 'SIGNED_OUT') {
+          toast({
+            title: "Signed out",
+            description: "You have been signed out successfully.",
+          });
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
+
   const signOut = async () => {
-    try {
-      const { error } = await baseSignOut();
-      if (error) throw error;
-    } catch (error) {
-      console.error("AuthProvider: Error signing out:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign out failed",
-        description: (error instanceof Error ? error.message : "An error occurred while signing out."),
-      });
-    }
+    await supabase.auth.signOut();
   };
 
   const value = {
     session,
     user,
-    userProfile,
     isLoading,
-    isProfileLoading,
     signOut,
-    refreshUserProfile,
   };
-
-  // Only log once when AuthProvider is initially rendered
-  React.useEffect(() => {
-    console.log("AuthProvider: Initialized");
-  }, []);
 
   return (
     <AuthContext.Provider value={value}>

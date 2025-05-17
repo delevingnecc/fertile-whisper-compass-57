@@ -53,10 +53,10 @@ const BottomNavigation = () => {
             item.isMain ? 'transform -translate-y-3' : ''
           } ${currentPath === item.to ? 'active text-primary' : 'text-gray-500'}`}
         >
-          <div className={`${item.isMain ? 'bg-white rounded-full p-2 shadow-lg border border-gray-100' : ''}`}>
+          <div className={`${item.isMain ? 'bg-primary rounded-full p-2 shadow-lg' : ''}`}>
             {React.isValidElement(item.icon) 
               ? React.cloneElement(item.icon as React.ReactElement, {
-                  className: `${item.isMain ? 'h-6 w-6 text-primary' : 'h-6 w-6'}`,
+                  className: `${item.isMain ? 'h-6 w-6 text-white' : 'h-6 w-6'}`,
                   strokeWidth: 1.5,
                 })
               : item.icon}

@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
+import { getProfile } from '@/integrations/supabase/profiles';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +13,39 @@ import { LogOut, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ProfileMenu = () => {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [userName, setUserName] = useState('');
 
-  // Use first letter of name if available, otherwise use email or default
-  const userInitial = userProfile?.name 
-    ? userProfile.name.charAt(0).toUpperCase()
-    : (user?.email ? user.email.charAt(0).toUpperCase() : 'U');
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const profile = await getProfile(user.id);
+          if (profile && profile.name) {
+            setUserName(profile.name);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (!user) return null;
+
+  // Use first letter of name if available, otherwise use email
+  const userInitial = userName 
+    ? userName.charAt(0).toUpperCase()
+    : (user.email ? user.email.charAt(0).toUpperCase() : 'U');
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -31,13 +57,13 @@ const ProfileMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <div className="px-2 py-1.5 text-xs text-muted-foreground">
-          {userProfile?.name || user?.email || 'Guest'}
+          {userName || user.email}
         </div>
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
           Profile
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={signOut}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           Sign out
         </DropdownMenuItem>

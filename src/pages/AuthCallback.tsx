@@ -1,72 +1,56 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
 
 const AuthCallback = () => {
+    const { user, isLoading } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
+    const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
 
     useEffect(() => {
-        console.log("AuthCallback: Processing authentication callback");
-        
-        const processAuthCallback = async () => {
+        // Only run this effect once authentication is loaded
+        if (isLoading) return;
+
+        const handleRedirect = async () => {
+            setIsCheckingOnboarding(true);
             try {
-                // First, parse the hash from the URL if present (needed for some OAuth providers)
-                const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                const accessToken = hashParams.get('access_token');
-                const refreshToken = hashParams.get('refresh_token');
-                
-                if (accessToken && refreshToken) {
-                    console.log("AuthCallback: Found tokens in URL hash, setting session");
-                    try {
-                        const { data, error } = await supabase.auth.setSession({
-                            access_token: accessToken,
-                            refresh_token: refreshToken
-                        });
-                        
-                        if (error) throw error;
-                        console.log("AuthCallback: Successfully set session from hash params");
-                    } catch (error) {
-                        console.error("AuthCallback: Error setting session from hash params:", error);
-                    }
+                // Check if user is authenticated
+                if (!user) {
+                    throw new Error("Authentication failed");
                 }
-                
-                // Get the current session to confirm the user is authenticated
-                const { data: sessionData } = await supabase.auth.getSession();
-                
-                if (sessionData.session) {
-                    console.log("AuthCallback: User authenticated, redirecting to home");
-                    toast({
-                        title: "Success!",
-                        description: "You've been successfully authenticated."
-                    });
-                    
-                    // Navigate to home page with replace to prevent back button issues
-                    navigate('/', { replace: true });
+
+                // Check if user has already completed onboarding
+                const completed = await hasCompletedOnboarding(user.id);
+
+                // Decide where to redirect
+                if (!completed) {
+                    navigate('/onboarding');
                 } else {
-                    console.log("AuthCallback: No session found, redirecting to login");
-                    toast({
-                        variant: "destructive",
-                        title: "Authentication Failed",
-                        description: "We couldn't complete your authentication. Please try again."
-                    });
-                    navigate('/auth', { replace: true });
+                    navigate('/');
                 }
+
+                toast({
+                    title: "Success!",
+                    description: "You've been successfully authenticated."
+                });
             } catch (error) {
-                console.error('AuthCallback: Auth callback error:', error);
+                console.error('Auth callback error:', error);
                 toast({
                     variant: "destructive",
                     title: "Authentication Failed",
                     description: "There was a problem with your authentication. Please try again."
                 });
-                navigate('/auth', { replace: true });
+                navigate('/auth');
+            } finally {
+                setIsCheckingOnboarding(false);
             }
         };
 
-        processAuthCallback();
-    }, [navigate, toast]);
+        handleRedirect();
+    }, [user, isLoading, navigate, toast]);
 
     // Show loading spinner while processing
     return (
@@ -76,4 +60,4 @@ const AuthCallback = () => {
     );
 };
 
-export default AuthCallback;
+export default AuthCallback; 

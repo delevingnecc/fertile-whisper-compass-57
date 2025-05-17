@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Community from "./pages/Community";
 import Clinician from "./pages/Clinician";
@@ -15,48 +14,32 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import AuthCallback from "./pages/AuthCallback";
 import { AuthProvider } from "./contexts/AuthProvider";
-import AuthRoute from "./components/AuthRoute";
+import AuthGuard from "./components/AuthGuard";
 
-// Create the query client instance outside of the component to avoid recreating it on each render
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-      staleTime: 60000, // 1 minute
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <Routes>
-            {/* Public routes - accessible without authentication */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            
-            {/* Routes that require authentication */}
-            <Route element={<AuthRoute />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/clinician" element={<Clinician />} />
-              <Route path="/progress" element={<Progress />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-            </Route>
-            
-            {/* Fallback route */}
+            <Route path="/onboarding" element={<AuthGuard><Onboarding /></AuthGuard>} />
+            <Route path="/" element={<AuthGuard><Home /></AuthGuard>} />
+            <Route path="/community" element={<AuthGuard><Community /></AuthGuard>} />
+            <Route path="/clinician" element={<AuthGuard><Clinician /></AuthGuard>} />
+            <Route path="/progress" element={<AuthGuard><Progress /></AuthGuard>} />
+            <Route path="/products" element={<AuthGuard><Products /></AuthGuard>} />
+            <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

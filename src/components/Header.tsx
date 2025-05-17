@@ -1,36 +1,53 @@
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthProvider';
 import ProfileMenu from './ProfileMenu';
 
 interface HeaderProps {
-  title: string;
+  title?: string;
   showBackButton?: boolean;
-  showProfileIcon?: boolean;
+  showProfileIcon?: boolean; // Add this prop to the interface
 }
 
-const Header = ({ title, showBackButton = false, showProfileIcon = true }: HeaderProps) => {
+const Header: React.FC<HeaderProps> = ({ title, showBackButton = false, showProfileIcon = true }) => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-10">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center">
-          {showBackButton && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="mr-2"
+    <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 h-16">
+      <div className="flex items-center justify-between h-full px-4">
+        {showBackButton ? (
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-6 h-6"
             >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-          )}
-          <h1 className="text-lg font-semibold">{title}</h1>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
+
+        {title && (
+          <h1 className="text-lg font-medium text-center flex-1">{title}</h1>
+        )}
+
+        <div className="w-10 flex justify-end">
+          {user && showProfileIcon && <ProfileMenu />}
         </div>
-        
-        {showProfileIcon && <ProfileMenu />}
       </div>
     </header>
   );

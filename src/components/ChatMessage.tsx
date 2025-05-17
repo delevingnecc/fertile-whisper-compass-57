@@ -27,9 +27,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName, userN
       {!isUser && (
         <div className="mr-2 flex-shrink-0">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/elephant-mascot.png" alt={assistantName} />
+            <AvatarImage src={`/assistant-${assistantName.toLowerCase()}.png`} alt={assistantName} />
             <AvatarFallback className="bg-primary-100 text-primary">
-              {assistantName.charAt(0).toUpperCase()}
+              {assistantName[0]}
             </AvatarFallback>
           </Avatar>
         </div>
