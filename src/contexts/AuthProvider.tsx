@@ -18,15 +18,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Add an ID to track this specific instance of AuthProvider
+  const providerId = React.useRef(`auth-provider-${Math.random().toString(36).substr(2, 9)}`);
 
   useEffect(() => {
-    console.log('[AuthProvider] Initializing auth state listener');
+    console.log(`[AuthProvider ${providerId.current}] Initializing auth state listener`);
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         // Log auth events for debugging
-        console.log(`[AuthProvider] Auth state changed: ${event}`, { event, session: newSession });
+        console.log(`[AuthProvider ${providerId.current}] Auth state changed: ${event}`, { 
+          event, 
+          userId: newSession?.user?.id,
+          session: newSession ? 'present' : 'null' 
+        });
         
         // Only synchronous state updates here
         setSession(newSession);
@@ -43,15 +50,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             description: "You have been signed in successfully.",
           });
         } else if (event === 'TOKEN_REFRESHED') {
-          console.log('[AuthProvider] Session token refreshed');
+          console.log(`[AuthProvider ${providerId.current}] Session token refreshed`);
         }
       }
     );
 
     // THEN check for existing session
-    console.log('[AuthProvider] Checking for existing session');
+    console.log(`[AuthProvider ${providerId.current}] Checking for existing session`);
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log('[AuthProvider] Session check complete', { 
+      console.log(`[AuthProvider ${providerId.current}] Session check complete`, { 
         hasSession: !!currentSession,
         userId: currentSession?.user?.id 
       });
@@ -62,13 +69,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => {
-      console.log('[AuthProvider] Cleaning up auth subscription');
+      console.log(`[AuthProvider ${providerId.current}] Cleaning up auth subscription`);
       subscription.unsubscribe();
     };
   }, [toast]);
 
   const signOut = async () => {
-    console.log('[AuthProvider] Signing out user');
+    console.log(`[AuthProvider ${providerId.current}] Signing out user`);
     await supabase.auth.signOut();
   };
 
@@ -80,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Log current auth state for debugging
-  console.log('[AuthProvider] Current auth state:', { 
+  console.log(`[AuthProvider ${providerId.current}] Current auth state:`, { 
     isAuthenticated: !!user,
     isLoading,
     userId: user?.id,

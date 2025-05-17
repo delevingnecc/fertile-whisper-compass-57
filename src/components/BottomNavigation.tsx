@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Package, Users, Stethoscope, Route } from 'lucide-react';
 
 type NavItem = {
@@ -11,6 +11,10 @@ type NavItem = {
 };
 
 const BottomNavigation = () => {
+  // Use useLocation hook to get current path
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const navItems: NavItem[] = [
     {
       icon: <Package />,
@@ -25,7 +29,7 @@ const BottomNavigation = () => {
     {
       icon: <img src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" alt="Chat" className="h-7 w-7" />,
       label: 'Chat',
-      to: '/',
+      to: '/home',
       isMain: true,
     },
     {
@@ -39,9 +43,6 @@ const BottomNavigation = () => {
       to: '/progress',
     },
   ];
-
-  // Get the current path
-  const currentPath = window.location.pathname;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 flex justify-around items-center z-10">

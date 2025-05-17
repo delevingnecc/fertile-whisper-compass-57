@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import BottomNavigation from '@/components/BottomNavigation';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import WelcomeScreen from '@/components/WelcomeScreen';
@@ -23,7 +20,6 @@ const Home = () => {
   const isMobile = useIsMobile();
 
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -187,11 +183,9 @@ const Home = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      <Header title={`Chat with ${assistantName}`} />
-
+    <div className="flex flex-col h-full bg-white">
       <div 
-        className={`flex-1 overflow-y-auto ${isMobile ? 'pt-20 pb-32' : 'pt-16 pb-28'} px-4 chat-gradient-bg scrollbar-hidden`}
+        className={`flex-1 overflow-y-auto pb-20 px-4 chat-gradient-bg scrollbar-hidden`}
       >
         <div className="max-w-lg mx-auto">
           {messages.map((message) => (
@@ -216,8 +210,6 @@ const Home = () => {
       <div className={`fixed ${isMobile ? 'bottom-20' : 'bottom-16'} left-0 right-0`}>
         <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
-
-      <BottomNavigation />
     </div>
   );
 };
