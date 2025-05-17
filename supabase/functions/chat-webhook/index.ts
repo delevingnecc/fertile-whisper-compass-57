@@ -87,8 +87,8 @@ serve(async (req) => {
     const webhookData = await webhookResponse.json();
     console.log("Webhook response received:", webhookData);
     
-    // We'll use the response from the webhook as the AI's message
-    const aiResponse = webhookData.response || "Sorry, I couldn't process that request.";
+    // FIXED: Use webhookData.output instead of webhookData.response
+    const aiResponse = webhookData.output || "Sorry, I couldn't process that request.";
 
     // Save AI response to the database
     const { data: aiMessage, error: aiMessageError } = await supabaseClient
