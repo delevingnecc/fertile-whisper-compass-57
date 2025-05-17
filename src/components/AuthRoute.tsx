@@ -2,12 +2,18 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 const AuthRoute = () => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner for a maximum of 1 second
+  // Log route information for debugging
+  useEffect(() => {
+    console.log(`AuthRoute: Current path: ${location.pathname}, isLoading: ${isLoading}, user: ${user?.id || 'none'}`);
+  }, [location.pathname, isLoading, user]);
+
+  // Show loading spinner for a maximum of 2 seconds
   // This prevents an endless loading state if something goes wrong
   if (isLoading) {
     return (
@@ -21,9 +27,13 @@ const AuthRoute = () => {
   }
 
   // If not authenticated, redirect to login
+  // Store the current path to redirect back after login
   if (!user) {
     console.log("AuthRoute: User not authenticated, redirecting to login");
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    // Only redirect to auth if we're not already there
+    if (location.pathname !== "/auth" && location.pathname !== "/auth/callback") {
+      return <Navigate to="/auth" state={{ from: location }} replace />;
+    }
   }
 
   // If authenticated, render the protected content

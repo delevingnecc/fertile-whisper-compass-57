@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Community from "./pages/Community";
 import Clinician from "./pages/Clinician";
@@ -18,7 +18,14 @@ import { AuthProvider } from "./contexts/AuthProvider";
 import AuthRoute from "./components/AuthRoute";
 
 // Create the query client instance outside of the component to avoid recreating it on each render
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+      retry: false,
+    },
+  },
+});
 
 const App = () => (
   // BrowserRouter is the outermost wrapper to prevent routing issues
