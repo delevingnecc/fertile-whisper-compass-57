@@ -2,6 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown';
+import { Elephant } from 'lucide-react';
 
 export type MessageType = {
   id: string;
@@ -29,7 +30,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName, userN
           <Avatar className="h-8 w-8">
             <AvatarImage src="/elephant-mascot.png" alt={assistantName} />
             <AvatarFallback className="bg-primary-100 text-primary">
-              {assistantName[0]}
+              <Elephant size={18} />
             </AvatarFallback>
           </Avatar>
         </div>
