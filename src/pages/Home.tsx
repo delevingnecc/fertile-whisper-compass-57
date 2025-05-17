@@ -11,6 +11,7 @@ import { getProfile } from '@/integrations/supabase/profiles';
 import { createConversation, getMessages } from '@/services/chatService';
 import { sendMessageToWebhook } from '@/services/webhookService';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Home = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -20,6 +21,7 @@ const Home = () => {
   const [userName, setUserName] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -189,7 +191,9 @@ const Home = () => {
     <div className="flex flex-col h-screen bg-white">
       <Header title={`Chat with ${assistantName}`} />
 
-      <div className="flex-1 overflow-y-auto pt-16 pb-24 px-4 chat-gradient-bg scrollbar-hidden">
+      <div 
+        className={`flex-1 overflow-y-auto ${isMobile ? 'pt-20 pb-28' : 'pt-16 pb-24'} px-4 chat-gradient-bg scrollbar-hidden`}
+      >
         <div className="max-w-lg mx-auto">
           {messages.map((message) => (
             <ChatMessage
@@ -209,7 +213,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0">
+      <div className={`fixed ${isMobile ? 'bottom-16' : 'bottom-14'} left-0 right-0`}>
         <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
 

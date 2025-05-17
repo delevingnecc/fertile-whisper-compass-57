@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import ReactMarkdown from 'react-markdown';
 
 export type MessageType = {
   id: string;
@@ -30,10 +31,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName }) => 
         </div>
       )}
       
-      <div className={`rounded-lg p-3 max-w-[75%] ${
+      <div className={`rounded-lg p-3 max-w-[80%] ${
         isUser ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
       } chat-message-${isUser ? 'user' : 'ai'}`}>
-        <p>{message.content}</p>
+        <div className="prose prose-sm max-w-none">
+          {isUser ? (
+            <p>{message.content}</p>
+          ) : (
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          )}
+        </div>
         <div className="text-xs text-right mt-1 opacity-70">
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>

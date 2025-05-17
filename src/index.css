@@ -102,3 +102,45 @@
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;  /* Chrome, Safari, Opera */
 }
+
+/* Markdown styling for chat messages */
+.chat-message-ai .prose {
+  @apply max-w-none;
+}
+
+.chat-message-ai .prose p {
+  @apply my-1.5;
+}
+
+.chat-message-ai .prose ul,
+.chat-message-ai .prose ol {
+  @apply my-2 pl-5;
+}
+
+.chat-message-ai .prose li {
+  @apply my-0.5;
+}
+
+.chat-message-ai .prose strong {
+  @apply font-semibold;
+}
+
+.chat-message-ai .prose a {
+  @apply text-primary underline;
+}
+
+.chat-message-ai .prose code {
+  @apply bg-gray-200 px-1 py-0.5 rounded text-sm;
+}
+
+.chat-message-ai .prose pre {
+  @apply bg-gray-800 text-white p-3 rounded-md my-3 overflow-x-auto;
+}
+
+.chat-message-ai .prose pre code {
+  @apply bg-transparent text-white p-0;
+}
+
+.chat-message-ai .prose blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic my-2;
+}

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -160,8 +159,25 @@ export default {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-soft': 'linear-gradient(180deg, rgba(255,255,255,0) 0%, #F9F5FF 100%)'
-			}
+			},
+			typography: (theme) => ({
+				DEFAULT: {
+					css: {
+						maxWidth: 'none',
+						color: theme('colors.gray.800'),
+						a: {
+							color: theme('colors.primary.DEFAULT'),
+							'&:hover': {
+								color: theme('colors.primary.700'),
+							},
+						},
+					},
+				},
+			}),
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		require("@tailwindcss/typography")
+	],
 } satisfies Config;
