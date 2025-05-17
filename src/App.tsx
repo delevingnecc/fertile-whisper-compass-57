@@ -24,29 +24,31 @@ const App = () => (
   // BrowserRouter is the outermost wrapper to prevent routing issues
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          {/* Public routes - accessible without authentication */}
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          
-          {/* Routes that require authentication */}
-          <Route element={<AuthProvider><AuthRoute /></AuthProvider>}>
-            <Route path="/" element={<Home />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/clinician" element={<Clinician />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-          </Route>
-          
-          {/* Fallback route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            {/* Public routes - accessible without authentication */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/* Routes that require authentication */}
+            <Route element={<AuthRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/clinician" element={<Clinician />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+            </Route>
+            
+            {/* Fallback route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );

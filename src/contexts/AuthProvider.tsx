@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
   const isMounted = useRef(true);
   const navigate = useNavigate();
+  const initialCheckDone = useRef(false);
 
   useEffect(() => {
     isMounted.current = true;
@@ -74,54 +75,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
     
-    // Set up the auth state listener
+    // Set up the auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         if (!isMounted.current) return;
         console.log("AuthProvider: Auth state changed:", event, newSession?.user?.id);
 
         setSession(newSession);
-        const newAuthUser = newSession?.user ?? null;
-        setUser(newAuthUser);
+        setUser(newSession?.user ?? null);
 
-        if (newAuthUser) {
-          // If this is a new login, redirect to home page
-          if (event === 'SIGNED_IN' && window.location.pathname.includes('/auth')) {
-            console.log("AuthProvider: New sign in detected, redirecting to home");
-            navigate('/');
-          }
-          await fetchUserProfile(newAuthUser);
+        // Use setTimeout to avoid potential deadlock with Supabase client
+        if (newSession?.user) {
+          setTimeout(() => {
+            if (isMounted.current) {
+              fetchUserProfile(newSession.user);
+            }
+          }, 0);
         } else {
           if (isMounted.current) {
             setUserProfile(null);
           }
         }
 
-        if (isMounted.current) setIsLoading(false);
+        // Make sure we're not stuck in loading state
+        if (isMounted.current && initialCheckDone.current) {
+          setIsLoading(false);
+        }
       }
     );
 
-    // Initial session check
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!isMounted.current) return;
-      console.log("AuthProvider: Initial session:", currentSession?.user?.id || "none");
+      console.log("AuthProvider: Initial session check:", currentSession?.user?.id || "none");
       
+      initialCheckDone.current = true;
       setSession(currentSession);
-      const currentAuthUser = currentSession?.user ?? null;
-      setUser(currentAuthUser);
+      setUser(currentSession?.user ?? null);
 
-      if (currentAuthUser) {
-        await fetchUserProfile(currentAuthUser);
-      } else {
-        if (isMounted.current) setIsProfileLoading(false);
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user);
       }
       
-      if (isMounted.current) setIsLoading(false);
+      // Always set isLoading to false after initial check to avoid stuck loading state
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }).catch(error => {
       console.error("AuthProvider: Error in initial getSession:", error);
       if (isMounted.current) {
+        initialCheckDone.current = true;
         setIsLoading(false);
-        setIsProfileLoading(false);
       }
     });
 
@@ -130,7 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted.current = false;
       subscription.unsubscribe();
     };
-  }, [toast, fetchUserProfile, navigate]);
+  }, [fetchUserProfile]);
 
   const signOut = useCallback(async () => {
     try {
