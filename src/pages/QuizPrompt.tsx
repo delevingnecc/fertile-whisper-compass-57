@@ -3,17 +3,34 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 const QuizPrompt = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleStartQuiz = () => {
+  const handleStartQuiz = async () => {
     // In the future this would navigate to the actual quiz
-    // For now, we'll just complete onboarding and go to home
+    // For now, we'll just mark that the user has seen the welcome screen
+    if (user) {
+      try {
+        await supabase
+          .from('user_profiles')
+          .update({ has_seen_welcome: true })
+          .eq('id', user.id);
+      } catch (error) {
+        console.error('Failed to update profile:', error);
+      }
+    }
+    
+    // Navigate to home (where they'll see the actual quiz later)
     navigate('/home');
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    // If the user skips, we don't mark the welcome screen as seen
+    // This way they'll see the welcome screen on their first visit to home
     navigate('/home');
   };
 

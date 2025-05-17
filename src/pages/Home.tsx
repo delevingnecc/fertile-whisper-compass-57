@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -9,6 +10,7 @@ import { createConversation, getMessages, saveMessage } from '@/services/chatSer
 import { sendMessageToWebhook } from '@/services/webhookService';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 const Home = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -32,18 +34,28 @@ const Home = () => {
           // Set user name from profile
           setUserName(profile.name);
 
-          // Check if this is the first time loading the chat
-          const hasVisitedBefore = localStorage.getItem('hasVisitedChat');
-          if (hasVisitedBefore) {
-            setShowWelcome(false);
+          // Check if the user has seen the welcome screen before
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('has_seen_welcome')
+            .eq('id', user.id)
+            .single();
 
-            // Get or create a conversation
-            const storedConversationId = localStorage.getItem('currentConversationId');
-            if (storedConversationId) {
-              setConversationId(storedConversationId);
-              loadMessages(storedConversationId);
-            } else {
-              initializeNewConversation();
+          if (error) {
+            console.error('Error fetching welcome screen status:', error);
+          } else {
+            // If the user has seen the welcome screen, don't show it again
+            if (data.has_seen_welcome) {
+              setShowWelcome(false);
+              
+              // Get or create a conversation
+              const storedConversationId = localStorage.getItem('currentConversationId');
+              if (storedConversationId) {
+                setConversationId(storedConversationId);
+                loadMessages(storedConversationId);
+              } else {
+                initializeNewConversation();
+              }
             }
           }
         }
@@ -154,6 +166,18 @@ const Home = () => {
   };
 
   const handleGetStarted = async () => {
+    if (user) {
+      try {
+        // Mark that the user has seen the welcome screen
+        await supabase
+          .from('user_profiles')
+          .update({ has_seen_welcome: true })
+          .eq('id', user.id);
+      } catch (error) {
+        console.error('Error updating welcome screen status:', error);
+      }
+    }
+    
     // Mark that the user has visited the chat before
     localStorage.setItem('hasVisitedChat', 'true');
     setShowWelcome(false);

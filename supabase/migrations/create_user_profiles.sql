@@ -1,3 +1,4 @@
+
 -- Create the user_profiles table to store onboarding information
 CREATE TABLE IF NOT EXISTS public.user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -5,8 +6,10 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     birthdate DATE NOT NULL,
     gender TEXT NOT NULL,
     onboarding_completed BOOLEAN DEFAULT FALSE,
+    has_seen_welcome BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    goals TEXT[] DEFAULT '{}'::TEXT[]
 );
 
 -- Set up Row Level Security (RLS)
@@ -36,4 +39,4 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_user_profiles_updated_at
 BEFORE UPDATE ON public.user_profiles
 FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column(); 
+EXECUTE FUNCTION update_updated_at_column();
