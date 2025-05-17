@@ -10,7 +10,6 @@ import { createConversation, getMessages, saveMessage } from '@/services/chatSer
 import { sendMessageToWebhook } from '@/services/webhookService';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
 
 const Home = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -21,12 +20,14 @@ const Home = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isInitialized) return;
+    
     const fetchUserProfile = async () => {
       try {
         const profile = await getProfile(user.id);
@@ -34,7 +35,7 @@ const Home = () => {
           // Set user name from profile
           setUserName(profile.name);
 
-          // Check if the user has seen the welcome screen before using localStorage instead
+          // Check if the user has seen the welcome screen before using localStorage
           const hasVisitedChat = localStorage.getItem('hasVisitedChat') === 'true';
           if (hasVisitedChat) {
             setShowWelcome(false);
@@ -43,11 +44,12 @@ const Home = () => {
             const storedConversationId = localStorage.getItem('currentConversationId');
             if (storedConversationId) {
               setConversationId(storedConversationId);
-              loadMessages(storedConversationId);
+              await loadMessages(storedConversationId);
             } else {
-              initializeNewConversation();
+              await initializeNewConversation();
             }
           }
+          setIsInitialized(true);
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -56,10 +58,12 @@ const Home = () => {
           description: 'Failed to load user profile',
           variant: 'destructive'
         });
+        setIsInitialized(true);
       }
     };
+    
     fetchUserProfile();
-  }, [user, toast]);
+  }, [user, toast, isInitialized]);
 
   const loadMessages = async (convId: string) => {
     try {
@@ -160,10 +164,6 @@ const Home = () => {
       try {
         // We're no longer updating has_seen_welcome in the database
         // Instead, we'll rely solely on localStorage
-        // await supabase
-        //   .from('user_profiles')
-        //   .update({ has_seen_welcome: true })
-        //   .eq('id', user.id);
       } catch (error) {
         console.error('Error updating welcome screen status:', error);
       }

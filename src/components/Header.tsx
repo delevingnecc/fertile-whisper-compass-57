@@ -10,7 +10,11 @@ interface HeaderProps {
   showProfileIcon?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBackButton = false, showProfileIcon = true }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  title, 
+  showBackButton = false, 
+  showProfileIcon = true 
+}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
