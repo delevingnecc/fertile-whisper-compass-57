@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
+
 const loginSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address"
@@ -208,7 +209,7 @@ const Auth = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col space-y-3">
                 {/* Google Sign-In Button - Following Brand Guidelines */}
                 <Button type="button" variant="outline" onClick={() => handleSocialLogin('google')} disabled={!!socialLoading} className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300 flex items-center justify-center gap-2">
                   <img src="/lovable-uploads/551a6746-11e9-4669-9d6e-133ec8b8e6b4.png" alt="Google logo" className="w-5 h-5 mr-1" />
@@ -271,7 +272,7 @@ const Auth = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col space-y-3">
                 {/* Google Sign-In Button - Following Brand Guidelines */}
                 <Button type="button" variant="outline" onClick={() => handleSocialLogin('google')} disabled={!!socialLoading} className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300 flex items-center justify-center gap-2">
                   <img src="/lovable-uploads/551a6746-11e9-4669-9d6e-133ec8b8e6b4.png" alt="Google logo" className="w-5 h-5 mr-1" />
