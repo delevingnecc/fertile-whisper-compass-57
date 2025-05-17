@@ -30,9 +30,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName }) => 
         </div>
       )}
       
-      <div className={isUser ? 'chat-message-user' : 'chat-message-ai'}>
+      <div className={`rounded-lg p-3 max-w-[75%] ${
+        isUser ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+      } chat-message-${isUser ? 'user' : 'ai'}`}>
         <p>{message.content}</p>
-        <div className="text-xs text-gray-500 mt-1 text-right">
+        <div className="text-xs text-right mt-1 opacity-70">
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
