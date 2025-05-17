@@ -1,3 +1,4 @@
+
 import { supabase } from './client';
 
 export interface UserProfile {
@@ -14,12 +15,17 @@ export interface UserProfile {
  * Create a new user profile or update an existing one
  */
 export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'updated_at'>) {
+    // Convert Date object to ISO string if birthdate is a Date
+    const birthdate = profile.birthdate instanceof Date 
+        ? profile.birthdate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+        : profile.birthdate;
+
     const { data, error } = await supabase
         .from('user_profiles')
         .upsert({
             id: profile.id,
             name: profile.name,
-            birthdate: profile.birthdate,
+            birthdate: birthdate,
             gender: profile.gender,
             onboarding_completed: profile.onboarding_completed
         }, {
