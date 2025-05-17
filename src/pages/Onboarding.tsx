@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -340,7 +341,6 @@ const Onboarding = () => {
             {/* Subtle pattern top and bottom */}
             <div className="absolute top-0 left-0 w-full h-12 bg-primary-50/30 z-0" />
             
-
             {/* Small logo */}
             <div className="pt-6 px-6 pb-2 z-10">
                 <div className="flex justify-start">
@@ -448,7 +448,7 @@ const Onboarding = () => {
                                             <FormLabel className="text-base text-gray-700">Your birthday</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="DDMMYYYY"
+                                                    placeholder="DD/MM/YYYY"
                                                     className="text-lg py-6 px-4 rounded-xl border-gray-300 h-[48px]"
                                                     value={field.value}
                                                     onChange={(e) => {
@@ -466,7 +466,7 @@ const Onboarding = () => {
                                                 />
                                             </FormControl>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                Please enter in format: DD/MM/YYYY
+                                                Enter as: DD/MM/YYYY (e.g., 15/01/1990)
                                             </p>
                                             <FormMessage />
                                         </FormItem>
