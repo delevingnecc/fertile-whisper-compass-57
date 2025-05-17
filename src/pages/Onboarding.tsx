@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,12 +38,27 @@ const nonBinaryOptions = [
 ];
 
 // Define form schema
+const nameSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
+});
+
+const birthdateSchema = z.object({
+  birthdate: z.date({
+    required_error: "Please select a date",
+  }),
+});
+
+const genderSchema = z.object({
+  gender: z.string().min(1, { message: 'Please select a gender option' }),
+});
+
+// Combined schema for final submission
 const onboardingSchema = z.object({
-    name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-    birthdate: z.date({
-        required_error: "Please select a date",
-    }),
-    gender: z.string().min(1, { message: 'Please select a gender option' }),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
+  birthdate: z.date({
+    required_error: "Please select a date",
+  }),
+  gender: z.string().min(1, { message: 'Please select a gender option' }),
 });
 
 type OnboardingValues = z.infer<typeof onboardingSchema>;
@@ -76,30 +92,36 @@ const Onboarding = () => {
         console.log('[Onboarding] Component mounted. User:', user?.id);
     }, []);
 
-    // This is the fixed nextStep function that will be used by all continue buttons
-    const nextStep = async (fieldToValidate?: 'name' | 'birthdate' | 'gender') => {
-        console.log(`[DEBUG] nextStep called with fieldToValidate:`, fieldToValidate);
-        console.log(`[DEBUG] Current step:`, step);
-        console.log(`[DEBUG] Current form values:`, form.getValues());
-        console.log(`[DEBUG] Form errors:`, form.formState.errors);
+    // Fixed nextStep function that validates only the current step
+    const nextStep = async () => {
+        console.log(`[DEBUG] nextStep called for step ${step}`);
         
-        if (fieldToValidate) {
-            console.log(`[DEBUG] Triggering validation for field:`, fieldToValidate);
-            const isValid = await form.trigger(fieldToValidate);
-            console.log(`[DEBUG] Validation result for ${fieldToValidate}:`, isValid);
-            
-            if (!isValid) {
-                console.log(`[DEBUG] Validation failed for ${fieldToValidate}, not advancing`);
-                return;
-            }
+        let isValid = false;
+        
+        // Only validate the field for the current step
+        if (step === 1) {
+            // For step 1, validate only the name field
+            isValid = await form.trigger('name');
+            console.log(`[DEBUG] Name validation result: ${isValid}`);
+        } 
+        else if (step === 2) {
+            // For step 2, validate only the birthdate field
+            isValid = await form.trigger('birthdate');
+            console.log(`[DEBUG] Birthdate validation result: ${isValid}`);
+        } 
+        else if (step === 3) {
+            // For step 3, validate only the gender field
+            isValid = await form.trigger('gender');
+            console.log(`[DEBUG] Gender validation result: ${isValid}`);
         }
         
-        console.log(`[DEBUG] All validations passed, advancing from step ${step} to step ${step + 1}`);
-        setStep(prevStep => {
-            const newStep = prevStep + 1;
-            console.log(`[DEBUG] Step state updated from ${prevStep} to ${newStep}`);
-            return newStep;
-        });
+        // Only proceed if the current step's validation passed
+        if (isValid) {
+            console.log(`[DEBUG] Validation passed, advancing to step ${step + 1}`);
+            setStep(prevStep => prevStep + 1);
+        } else {
+            console.log(`[DEBUG] Validation failed for step ${step}, not advancing`);
+        }
     };
 
     const prevStep = () => {
@@ -191,13 +213,6 @@ const Onboarding = () => {
         errors: form.formState.errors
     });
 
-    const handleNextStepButtonClick = () => {
-        console.log(`[DEBUG] Continue button clicked for step ${step}`);
-        const fieldToValidate = step === 1 ? 'name' : step === 2 ? 'birthdate' : 'gender';
-        console.log(`[DEBUG] Will validate field: ${fieldToValidate}`);
-        nextStep(fieldToValidate as 'name' | 'birthdate' | 'gender');
-    };
-
     return (
         <div className="min-h-screen flex flex-col bg-white">
             {/* Subtle pattern top and bottom */}
@@ -267,7 +282,7 @@ const Onboarding = () => {
                                 <div className="mt-auto pt-6 pb-10">
                                     <Button
                                         type="button"
-                                        onClick={handleNextStepButtonClick}
+                                        onClick={nextStep}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step1"
                                     >
@@ -343,7 +358,7 @@ const Onboarding = () => {
                                 <div className="mt-auto pt-6 pb-10">
                                     <Button
                                         type="button"
-                                        onClick={handleNextStepButtonClick}
+                                        onClick={nextStep}
                                         className="w-full py-6 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step2"
                                     >
