@@ -8,7 +8,8 @@ import ChatInput from '@/components/ChatInput';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getProfile } from '@/integrations/supabase/profiles';
-import { createConversation, getMessages, saveMessage } from '@/services/chatService';
+import { createConversation, getMessages } from '@/services/chatService';
+import { sendMessageToWebhook } from '@/services/webhookService';
 import { useToast } from '@/hooks/use-toast';
 
 const Home = () => {
@@ -79,7 +80,7 @@ const Home = () => {
         setMessages([welcomeMessage]);
         
         // Save welcome message to database
-        await saveMessage(convId, welcomeMessage.content, welcomeMessage.sender);
+        await sendMessageToWebhook('', convId);
       } else {
         setMessages(chatMessages);
       }
@@ -110,8 +111,8 @@ const Home = () => {
       };
       setMessages([welcomeMessage]);
       
-      // Save welcome message to database
-      await saveMessage(newConversationId, welcomeMessage.content, welcomeMessage.sender);
+      // No need to save welcome message here, it will be added
+      // when user sends their first message
     } catch (error) {
       console.error('Error creating conversation:', error);
       toast({
@@ -144,40 +145,29 @@ const Home = () => {
     setIsLoading(true);
 
     try {
-      // Save user message to database
-      const savedUserMessage = await saveMessage(conversationId, content, 'user');
+      // Send message to webhook and get AI response
+      const aiResponse = await sendMessageToWebhook(content, conversationId);
       
-      // Replace temporary message with saved message
-      setMessages(prev => 
-        prev.map(msg => msg.id === newUserMessage.id ? savedUserMessage : msg)
-      );
+      // Update messages with the AI response
+      setMessages((prev) => [
+        ...prev.filter(msg => msg.id !== newUserMessage.id),
+        {
+          id: 'user-' + Date.now().toString(),
+          content: content,
+          sender: 'user',
+          timestamp: new Date(),
+        },
+        aiResponse
+      ]);
       
-      // Mock AI response with a delay (this would be replaced with actual AI integration)
-      setTimeout(async () => {
-        const aiResponses = [
-          `I understand how you feel, ${userName || 'there'}. Fertility journeys can be complex.`,
-          'That\'s a great question! Let me help you understand your cycle better.',
-          'I\'m here to support you every step of the way.',
-          'Based on the information you\'ve shared, I\'d recommend tracking these symptoms.',
-          'Would you like me to remind you about your upcoming appointments?'
-        ];
-
-        const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-
-        // Save AI response to database
-        const savedAiMessage = await saveMessage(conversationId, randomResponse, 'ai');
-        
-        // Add AI response to messages
-        setMessages((prev) => [...prev, savedAiMessage]);
-        setIsLoading(false);
-      }, 1000);
     } catch (error) {
-      console.error('Error saving message:', error);
+      console.error('Error processing message:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send message',
+        description: 'Failed to get a response',
         variant: 'destructive',
       });
+    } finally {
       setIsLoading(false);
     }
   };
