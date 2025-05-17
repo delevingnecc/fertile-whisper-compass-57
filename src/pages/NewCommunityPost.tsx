@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -118,7 +117,7 @@ const NewCommunityPost = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header title="New Post" hasBackButton />
+      <Header title="New Post" showBackButton={true} />
       
       <div className="flex-1 pt-16 pb-20 px-4">
         <div className="max-w-md mx-auto py-6">
