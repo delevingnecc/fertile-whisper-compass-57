@@ -82,7 +82,7 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
         throw error;
     }
 
-    return data;
+    return data as UserProfile;
 }
 
 /**
