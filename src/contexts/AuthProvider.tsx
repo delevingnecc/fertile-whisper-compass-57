@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
+        // Only show toasts for actual sign in/out events, not for session refreshes
         if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             description: "You have been signed in successfully.",
           });
         }
+        // Don't show toasts for INITIAL_SESSION or TOKEN_REFRESHED events
       }
     );
 
