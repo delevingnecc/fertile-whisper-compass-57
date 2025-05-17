@@ -239,7 +239,7 @@ const Auth = () => {
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.5 }} 
-          className="bg-white p-8 rounded-lg shadow-lg w-full"
+          className="w-full"
         >
           <div className="mb-6 text-center">
             <motion.div 
@@ -250,7 +250,7 @@ const Auth = () => {
               <img 
                 src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" 
                 alt="Elephant mascot" 
-                className="h-20 w-auto" 
+                className="h-30 w-auto" 
               />
             </motion.div>
             <h1 className="text-2xl font-bold text-primary-800">Welcome to Genesis</h1>
@@ -295,7 +295,7 @@ const Auth = () => {
                       <div className="w-full border-t border-gray-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">or continue with</span>
+                      <span className="px-2 bg-gradient-to-b from-white to-primary-50 text-gray-500">or continue with</span>
                     </div>
                   </div>
 
@@ -363,7 +363,7 @@ const Auth = () => {
                       <div className="w-full border-t border-gray-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">or continue with</span>
+                      <span className="px-2 bg-gradient-to-b from-white to-primary-50 text-gray-500">or continue with</span>
                     </div>
                   </div>
 
