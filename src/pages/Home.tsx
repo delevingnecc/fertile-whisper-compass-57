@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { MessageType } from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -201,8 +200,8 @@ const Home = () => {
   }
 
   return (
-    <div className="flex flex-col h-full relative">
-      <div className="flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg scrollbar-hidden h-full">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto pb-20 px-4 py-6 chat-gradient-bg">
         <div className="max-w-none mx-auto">
           {messages.length === 0 ? (
             <FloatingElephant />

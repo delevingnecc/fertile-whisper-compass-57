@@ -15,10 +15,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   const hideNavigation = isOnboarding || isQuizPrompt;
   
   return (
-    <div className="flex flex-col min-h-screen h-screen bg-white overflow-hidden">
+    <div className="flex flex-col min-h-screen h-screen bg-white">
       {!isQuizPrompt && <Header />}
-      <main className={`flex-1 flex flex-col ${!isQuizPrompt ? 'pt-16' : ''} ${!hideNavigation ? 'pb-16' : ''} ${location.pathname === '/home' ? 'overflow-hidden h-full' : 'overflow-hidden'}`}>
-        {children || <Outlet />}
+      <main className={`flex-1 ${!isQuizPrompt ? 'pt-16' : ''} ${!hideNavigation ? 'pb-16' : ''}`}>
+        <div className="h-full overflow-y-auto">
+          {children || <Outlet />}
+        </div>
       </main>
       {!hideNavigation && <BottomNavigation />}
     </div>
