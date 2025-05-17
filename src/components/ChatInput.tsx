@@ -29,7 +29,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled }) => {
       style={{ 
         boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
         paddingBottom: isMobile ? '16px' : '16px',
-        marginBottom: '0px',
+        marginBottom: '2px', // Added 2px margin to lower the input box
       }}
     >
       <Input
