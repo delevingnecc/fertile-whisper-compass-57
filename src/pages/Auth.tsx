@@ -13,145 +13,143 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
-
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  email: z.string().email({
+    message: "Please enter a valid email address"
+  }),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters"
+  })
 });
-
 const signupSchema = loginSchema.extend({
-  confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
-}).refine((data) => data.password === data.confirmPassword, {
+  confirmPassword: z.string().min(6, {
+    message: "Password must be at least 6 characters"
+  })
+}).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
-  path: ["confirmPassword"],
+  path: ["confirmPassword"]
 });
-
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
-
 const Auth = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
-      password: "",
-    },
+      password: ""
+    }
   });
-
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
-    },
+      confirmPassword: ""
+    }
   });
-
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);
-    
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const {
+        data,
+        error
+      } = await supabase.auth.signInWithPassword({
         email: values.email,
-        password: values.password,
+        password: values.password
       });
-
       if (error) throw error;
-      
       toast({
         title: "Success!",
-        description: "You've been logged in successfully.",
+        description: "You've been logged in successfully."
       });
-      
       navigate("/");
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again."
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
-    
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const {
+        data,
+        error
+      } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: window.location.origin
         }
       });
-
       if (error) throw error;
-      
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account.",
+        description: "Please check your email to verify your account."
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Signup failed",
-        description: error.message || "Please try again later.",
+        description: error.message || "Please try again later."
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
-    
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const {
+        data,
+        error
+      } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin,
-        },
+          redirectTo: window.location.origin
+        }
       });
-
       if (error) throw error;
-      
+
       // The user will be redirected, so we don't need to do anything here
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.message || `Failed to sign in with ${provider}. Please try again.`,
+        description: error.message || `Failed to sign in with ${provider}. Please try again.`
       });
       setSocialLoading(null);
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md"
-      >
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      duration: 0.5
+    }} className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="mb-6 text-center">
-          <motion.div 
-            className="flex justify-center mb-4"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          >
-            <img 
-              src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" 
-              alt="Elephant mascot" 
-              className="h-20 w-auto"
-            />
+          <motion.div className="flex justify-center mb-4" animate={{
+          y: [0, -5, 0]
+        }} transition={{
+          repeat: Infinity,
+          duration: 2,
+          ease: "easeInOut"
+        }}>
+            <img src="/lovable-uploads/eb70d7b3-a429-42b6-aa8d-6f378554327b.png" alt="Elephant mascot" className="h-20 w-auto" />
           </motion.div>
           <h1 className="text-2xl font-bold text-primary-800">Welcome to FertilityPal</h1>
           <p className="text-gray-600 mt-1">Your personal fertility companion</p>
@@ -166,33 +164,25 @@ const Auth = () => {
           <TabsContent value="login">
             <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                <FormField
-                  control={loginForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={loginForm.control} name="email" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input placeholder="your@email.com" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
                 
-                <FormField
-                  control={loginForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={loginForm.control} name="password" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="••••••••" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
@@ -209,27 +199,15 @@ const Auth = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Google Sign-In Button - Following Brand Guidelines */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleSocialLogin('google')}
-                    disabled={!!socialLoading}
-                    className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('google')} disabled={!!socialLoading} className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300">
                     <FontAwesomeIcon icon={faGoogle} className="text-[#4285F4] mr-2 h-4 w-4" />
-                    <span>Google</span>
+                    <span>Sign in with Google</span>
                   </Button>
                   
                   {/* Apple Sign-In Button - Following Brand Guidelines */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleSocialLogin('apple')}
-                    disabled={!!socialLoading}
-                    className="w-full bg-black hover:bg-gray-900 text-white border-black"
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('apple')} disabled={!!socialLoading} className="w-full bg-black hover:bg-gray-900 text-white border-black">
                     <FontAwesomeIcon icon={faApple} className="mr-2 h-4 w-4" />
-                    <span>Apple</span>
+                    <span>Sign in with Apple</span>
                   </Button>
                 </div>
               </form>
@@ -239,47 +217,35 @@ const Auth = () => {
           <TabsContent value="signup">
             <Form {...signupForm}>
               <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
-                <FormField
-                  control={signupForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={signupForm.control} name="email" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input placeholder="your@email.com" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
                 
-                <FormField
-                  control={signupForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={signupForm.control} name="password" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="••••••••" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
                 
-                <FormField
-                  control={signupForm.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={signupForm.control} name="confirmPassword" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="••••••••" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create account"}
@@ -296,25 +262,13 @@ const Auth = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Google Sign-In Button - Following Brand Guidelines */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleSocialLogin('google')}
-                    disabled={!!socialLoading}
-                    className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('google')} disabled={!!socialLoading} className="w-full bg-white hover:bg-gray-50 text-gray-700 border-gray-300">
                     <FontAwesomeIcon icon={faGoogle} className="text-[#4285F4] mr-2 h-4 w-4" />
                     <span>Google</span>
                   </Button>
                   
                   {/* Apple Sign-In Button - Following Brand Guidelines */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleSocialLogin('apple')}
-                    disabled={!!socialLoading}
-                    className="w-full bg-black hover:bg-gray-900 text-white border-black"
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleSocialLogin('apple')} disabled={!!socialLoading} className="w-full bg-black hover:bg-gray-900 text-white border-black">
                     <FontAwesomeIcon icon={faApple} className="mr-2 h-4 w-4" />
                     <span>Apple</span>
                   </Button>
@@ -324,8 +278,6 @@ const Auth = () => {
           </TabsContent>
         </Tabs>
       </motion.div>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
