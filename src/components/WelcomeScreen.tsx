@@ -77,7 +77,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             {userName ? `Nice to meet you ${userName}!` : 'Your AI companion on your journey to wellness'}
           </motion.p>
           
-          <motion.p className="text-lg mb-6 text-gray-600" initial={{
+          <motion.p className="text-base mb-5 text-gray-600" initial={{
           opacity: 0
         }} animate={{
           opacity: 1
@@ -92,7 +92,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
-            className="w-full mb-8"
+            className="w-full mb-6"
           >
             <Card className="p-5 bg-white/80 backdrop-blur shadow-md border border-primary-100">
               <h3 className="font-semibold text-primary-700 mb-3 text-left">Eve's here to support you with:</h3>
