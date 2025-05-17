@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import ProfileMenu from './ProfileMenu';
 
@@ -13,6 +13,12 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, showBackButton = false, showProfileIcon = true }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const location = useLocation();
+  
+  // Hide header on welcome page (when user first visits the home page and sees welcome screen)
+  if (location.pathname === '/home' && localStorage.getItem('hasVisitedChat') !== 'true') {
+    return null;
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 h-16">
