@@ -626,12 +626,12 @@ const Onboarding = () => {
                                                     </div>
                                                 )}
                                                 
-                                                {/* Goal Icon */}
-                                                <div className="flex justify-center items-center h-12 my-1">
+                                                {/* Goal Icon - updated to be 1.5x bigger */}
+                                                <div className="flex justify-center items-center h-18 my-1">
                                                     <img 
                                                         src={goal.icon} 
                                                         alt={goal.label} 
-                                                        className="h-10 w-auto"
+                                                        className="h-15 w-auto" 
                                                     />
                                                 </div>
                                                 
