@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -113,10 +113,6 @@ const birthdateSchema = z.object({
     }, { message: 'Please enter a valid date between 1900 and today' }),
 });
 
-const genderSchema = z.object({
-  gender: z.string().min(1, { message: 'Please select a gender option' }),
-});
-
 // Add a schema for goals
 const goalsSchema = z.object({
   goals: z.array(z.string()).min(1, { message: 'Please select at least one goal' })
@@ -157,6 +153,21 @@ const Onboarding = () => {
         },
         mode: 'onChange',
     });
+
+    // Function to format date input with automatic slashes as user types
+    const formatDateInput = (value: string) => {
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+        
+        // Format with slashes based on input length
+        if (digits.length <= 2) {
+            return digits;
+        } else if (digits.length <= 4) {
+            return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        } else {
+            return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+        }
+    };
 
     // Log step changes
     useEffect(() => {
@@ -381,7 +392,7 @@ const Onboarding = () => {
                                             <FormControl>
                                                 <Input
                                                     placeholder="Enter your name"
-                                                    className="text-lg py-6 px-4 rounded-xl border-gray-300"
+                                                    className="text-lg py-6 px-4 rounded-xl border-gray-300 h-[48px]"
                                                     {...field}
                                                     onBlur={(e) => {
                                                         field.onBlur();
@@ -398,7 +409,7 @@ const Onboarding = () => {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-[48px] text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step1"
                                     >
                                         Continue
@@ -437,13 +448,21 @@ const Onboarding = () => {
                                             <FormLabel className="text-base text-gray-700">Your birthday</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="DD/MM/YYYY"
-                                                    className="text-lg py-6 px-4 rounded-xl border-gray-300"
-                                                    {...field}
+                                                    placeholder="DDMMYYYY"
+                                                    className="text-lg py-6 px-4 rounded-xl border-gray-300 h-[48px]"
+                                                    value={field.value}
+                                                    onChange={(e) => {
+                                                        const formatted = formatDateInput(e.target.value);
+                                                        // Only update if within valid length (10 chars for dd/mm/yyyy)
+                                                        if (formatted.length <= 10) {
+                                                            field.onChange(formatted);
+                                                        }
+                                                    }}
                                                     onBlur={(e) => {
                                                         field.onBlur();
                                                         form.trigger('birthdate');
                                                     }}
+                                                    inputMode="numeric"
                                                 />
                                             </FormControl>
                                             <p className="text-sm text-gray-500 mt-1">
@@ -458,7 +477,7 @@ const Onboarding = () => {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-[48px] text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step2"
                                     >
                                         Continue
@@ -576,7 +595,7 @@ const Onboarding = () => {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-[48px] text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="continue-button-step3"
                                     >
                                         Continue
@@ -654,7 +673,7 @@ const Onboarding = () => {
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting || selectedGoals.length === 0}
-                                        className="w-full h-12 text-lg rounded-full bg-black hover:bg-gray-800 text-white"
+                                        className="w-full h-[48px] text-lg rounded-full bg-black hover:bg-gray-800 text-white"
                                         data-testid="complete-button"
                                     >
                                         {isSubmitting ? "Saving..." : "Complete"}
