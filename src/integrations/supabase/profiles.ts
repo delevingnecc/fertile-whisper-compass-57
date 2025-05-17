@@ -1,4 +1,3 @@
-
 import { supabase } from './client';
 
 export interface UserProfile {
@@ -53,7 +52,7 @@ export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'u
         throw error;
     }
 
-    return data;
+    return data as UserProfile;
 }
 
 /**
