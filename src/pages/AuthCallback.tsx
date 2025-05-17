@@ -33,13 +33,27 @@ const AuthCallback = () => {
                     }
                 }
                 
-                toast({
-                    title: "Success!",
-                    description: "You've been successfully authenticated."
-                });
+                // Get the current session to confirm the user is authenticated
+                const { data: sessionData } = await supabase.auth.getSession();
                 
-                // Simply navigate to home page without any checks
-                navigate('/', { replace: true });
+                if (sessionData.session) {
+                    console.log("AuthCallback: User authenticated, redirecting to home");
+                    toast({
+                        title: "Success!",
+                        description: "You've been successfully authenticated."
+                    });
+                    
+                    // Navigate to home page with replace to prevent back button issues
+                    navigate('/', { replace: true });
+                } else {
+                    console.log("AuthCallback: No session found, redirecting to login");
+                    toast({
+                        variant: "destructive",
+                        title: "Authentication Failed",
+                        description: "We couldn't complete your authentication. Please try again."
+                    });
+                    navigate('/auth', { replace: true });
+                }
             } catch (error) {
                 console.error('AuthCallback: Auth callback error:', error);
                 toast({

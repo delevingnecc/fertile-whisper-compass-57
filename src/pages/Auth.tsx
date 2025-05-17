@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,19 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        console.log("Auth page: User already logged in, redirecting to home");
+        navigate('/');
+      }
+    };
+    
+    checkUser();
+  }, [navigate]);
+  
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -73,7 +86,8 @@ const Auth = () => {
         description: "You've been logged in successfully."
       });
 
-      navigate('/');
+      // Redirect to home page after successful login
+      navigate('/', { replace: true });
     } catch (error: any) {
       console.error("Auth page: Login error:", error);
       toast({
@@ -90,22 +104,16 @@ const Auth = () => {
     setIsLoading(true);
     console.log("Auth page: Attempting signup with email:", values.email);
     
-    supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        emailRedirectTo: window.location.origin + '/auth/callback'
-      }
-    }).then(({ data, error }) => {
-      if (error) {
-        console.error("Auth page: Signup error:", error);
-        toast({
-          variant: "destructive",
-          title: "Signup failed",
-          description: error.message || "Please try again later."
-        });
-        return;
-      }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: window.location.origin + '/auth/callback'
+        }
+      });
+      
+      if (error) throw error;
       
       console.log("Auth page: Signup successful, user:", data.user?.id);
       toast({
@@ -113,41 +121,45 @@ const Auth = () => {
         description: "Please check your email to verify your account."
       });
       
-      navigate('/');
-    }).finally(() => {
+      // If auto-confirm is enabled in Supabase, the user will be signed in immediately
+      if (data.session) {
+        navigate('/', { replace: true });
+      }
+    } catch (error: any) {
+      console.error("Auth page: Signup error:", error);
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: error.message || "Please try again later."
+      });
+    } finally {
       setIsLoading(false);
-    });
+    }
   };
   
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     console.log(`Auth page: Attempting ${provider} login`);
     
-    supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      }
-    }).then(({ data, error }) => {
-      if (error) {
-        console.error(`Auth page: ${provider} login error:`, error);
-        toast({
-          variant: "destructive",
-          title: "Login failed",
-          description: error.message || `Failed to sign in with ${provider}. Please try again.`
-        });
-      }
-      // The user will be redirected, so we don't need to do anything here
-    }).catch(error => {
-      console.error(`Auth page: Unexpected ${provider} login error:`, error);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        }
+      });
+      
+      if (error) throw error;
+      // User will be redirected to provider's auth page
+    } catch (error: any) {
+      console.error(`Auth page: ${provider} login error:`, error);
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: `An unexpected error occurred. Please try again.`
+        description: error.message || `Failed to sign in with ${provider}. Please try again.`
       });
-    }).finally(() => {
       setSocialLoading(null);
-    });
+    }
   };
   
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
