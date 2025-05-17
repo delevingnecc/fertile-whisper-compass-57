@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/components/ui/use-toast';
 import { hasCompletedOnboarding } from '@/integrations/supabase/profiles';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthCallback = () => {
     const { user, isLoading } = useAuth();
@@ -11,25 +13,60 @@ const AuthCallback = () => {
     const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
 
     useEffect(() => {
+        console.log("AuthCallback: Processing authentication callback");
+        
+        // First, parse the hash from the URL if present (needed for some OAuth providers)
+        const handleHashParameters = async () => {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+                console.log("AuthCallback: Found tokens in URL hash, setting session");
+                try {
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    });
+                    
+                    if (error) throw error;
+                    console.log("AuthCallback: Successfully set session from hash params");
+                } catch (error) {
+                    console.error("AuthCallback: Error setting session from hash params:", error);
+                }
+            }
+        };
+        
+        handleHashParameters();
+        
         // Only run this effect once authentication is loaded
-        if (isLoading) return;
+        if (isLoading) {
+            console.log("AuthCallback: Auth state still loading");
+            return;
+        }
 
         const handleRedirect = async () => {
             setIsCheckingOnboarding(true);
             try {
                 // Check if user is authenticated
                 if (!user) {
+                    console.log("AuthCallback: No authenticated user");
                     throw new Error("Authentication failed");
                 }
+                
+                console.log("AuthCallback: User authenticated:", user.id);
 
                 // Check if user has already completed onboarding
                 const completed = await hasCompletedOnboarding(user.id);
+                console.log("AuthCallback: Onboarding completed:", completed);
 
                 // Decide where to redirect
                 if (!completed) {
-                    navigate('/onboarding');
+                    console.log("AuthCallback: Redirecting to onboarding");
+                    navigate('/onboarding', { replace: true });
                 } else {
-                    navigate('/');
+                    console.log("AuthCallback: Redirecting to home");
+                    navigate('/', { replace: true });
                 }
 
                 toast({
@@ -37,13 +74,13 @@ const AuthCallback = () => {
                     description: "You've been successfully authenticated."
                 });
             } catch (error) {
-                console.error('Auth callback error:', error);
+                console.error('AuthCallback: Auth callback error:', error);
                 toast({
                     variant: "destructive",
                     title: "Authentication Failed",
                     description: "There was a problem with your authentication. Please try again."
                 });
-                navigate('/auth');
+                navigate('/auth', { replace: true });
             } finally {
                 setIsCheckingOnboarding(false);
             }
@@ -60,4 +97,4 @@ const AuthCallback = () => {
     );
 };
 
-export default AuthCallback; 
+export default AuthCallback;
