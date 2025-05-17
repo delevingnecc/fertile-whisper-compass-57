@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Apple, Google } from "lucide-react";
+import { SmartphoneIcon, CreditCard } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -215,7 +214,7 @@ const Auth = () => {
                     disabled={!!socialLoading}
                     className="w-full"
                   >
-                    <Google className="mr-2 h-4 w-4" />
+                    <SmartphoneIcon className="mr-2 h-4 w-4" />
                     Google
                   </Button>
                   <Button
@@ -225,7 +224,7 @@ const Auth = () => {
                     disabled={!!socialLoading}
                     className="w-full"
                   >
-                    <Apple className="mr-2 h-4 w-4" />
+                    <CreditCard className="mr-2 h-4 w-4" />
                     Apple
                   </Button>
                 </div>
@@ -299,7 +298,7 @@ const Auth = () => {
                     disabled={!!socialLoading}
                     className="w-full"
                   >
-                    <Google className="mr-2 h-4 w-4" />
+                    <SmartphoneIcon className="mr-2 h-4 w-4" />
                     Google
                   </Button>
                   <Button
@@ -309,7 +308,7 @@ const Auth = () => {
                     disabled={!!socialLoading}
                     className="w-full"
                   >
-                    <Apple className="mr-2 h-4 w-4" />
+                    <CreditCard className="mr-2 h-4 w-4" />
                     Apple
                   </Button>
                 </div>

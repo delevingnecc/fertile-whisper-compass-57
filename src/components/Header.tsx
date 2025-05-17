@@ -7,9 +7,10 @@ import ProfileMenu from './ProfileMenu';
 interface HeaderProps {
   title?: string;
   showBackButton?: boolean;
+  showProfileIcon?: boolean; // Add this prop to the interface
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
+const Header: React.FC<HeaderProps> = ({ title, showBackButton = false, showProfileIcon = true }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -45,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
         )}
 
         <div className="w-10 flex justify-end">
-          {user && <ProfileMenu />}
+          {user && showProfileIcon && <ProfileMenu />}
         </div>
       </div>
     </header>
