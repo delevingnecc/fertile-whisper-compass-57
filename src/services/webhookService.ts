@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MessageType } from "@/components/ChatMessage";
+import { toast } from "@/hooks/use-toast";
 
 /**
  * Sends a message to the AI webhook and returns the AI's response
@@ -29,6 +30,16 @@ export const sendMessageToWebhook = async (
 
     if (error) {
       console.error("Error calling webhook:", error);
+      
+      // Check if error is related to API key
+      if (error.message?.includes("No API key found") || error.message?.includes("apikey")) {
+        toast({
+          title: "API Configuration Error",
+          description: "The API key is missing or invalid. Please contact an administrator.",
+          variant: "destructive"
+        });
+      }
+      
       throw error;
     }
 

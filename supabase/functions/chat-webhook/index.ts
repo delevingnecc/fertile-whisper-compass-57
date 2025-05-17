@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const webhookUrl = "https://designsynergy.app.n8n.cloud/webhook/bf4dd093-bb02-472c-9454-7ab9af97bd1d";
 const bearerToken = Deno.env.get("WEBHOOK_BEARER_TOKEN") || "";
+const apiKey = Deno.env.get("SUPABASE_API_KEY") || "";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,10 +31,11 @@ serve(async (req) => {
 
     console.log(`Processing request: User ${userId} sent message in conversation ${conversationId}`);
 
-    // Save user message to database
+    // Initialize Supabase client with API key from environment
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_ANON_KEY") || "",
+      supabaseUrl,
+      apiKey,
       {
         global: {
           headers: { Authorization: req.headers.get('Authorization') || "" },
@@ -87,7 +89,6 @@ serve(async (req) => {
     const webhookData = await webhookResponse.json();
     console.log("Webhook response received:", webhookData);
     
-    // FIXED: Use webhookData.output instead of webhookData.response
     const aiResponse = webhookData.output || "Sorry, I couldn't process that request.";
 
     // Save AI response to the database
