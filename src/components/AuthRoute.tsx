@@ -1,31 +1,20 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const AuthRoute = () => {
-  const { user, isLoading } = useAuth();
+  const { user, userProfile, isLoading, isProfileLoading } = useAuth();
   const location = useLocation();
-  const [localLoading, setLocalLoading] = useState(true);
-  
-  // Set a shorter local timeout to prevent UI hanging
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLocalLoading(false);
-    }, 1000); // Only show loading spinner for 1 second max
-    
-    return () => clearTimeout(timer);
-  }, []);
 
-  // Log route information for debugging
   useEffect(() => {
-    console.log(`AuthRoute: Path ${location.pathname}, isLoading: ${isLoading}, user: ${user?.id || 'none'}`);
-  }, [location.pathname, isLoading, user]);
+    console.log(
+      `AuthRoute: Path ${location.pathname}, isLoading: ${isLoading}, isProfileLoading: ${isProfileLoading}, user: ${user?.id || 'none'}, onboarding: ${userProfile?.onboarding_completed}`
+    );
+  }, [location.pathname, isLoading, isProfileLoading, user, userProfile]);
 
-  // Use a combination of auth loading state and local loading state
-  const showLoading = isLoading && localLoading;
-  
-  // If still loading, show loading spinner, but only briefly
+  const showLoading = isLoading || isProfileLoading;
+
   if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -37,13 +26,26 @@ const AuthRoute = () => {
     );
   }
 
-  // If not authenticated, redirect to login
   if (!user) {
     console.log("AuthRoute: User not authenticated, redirecting to login");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
-  
-  // Otherwise render the protected content
+
+  if (user && userProfile) {
+    const isOnboardingPage = location.pathname === "/onboarding";
+    const onboardingCompleted = userProfile.onboarding_completed;
+
+    if (!onboardingCompleted && !isOnboardingPage) {
+      console.log("AuthRoute: Onboarding not complete, redirecting to /onboarding");
+      return <Navigate to="/onboarding" state={{ from: location }} replace />;
+    }
+
+    if (onboardingCompleted && isOnboardingPage) {
+      console.log("AuthRoute: Onboarding complete, redirecting from /onboarding to /");
+      return <Navigate to={location.state?.from?.pathname || "/"} replace />;
+    }
+  }
+
   console.log("AuthRoute: User authenticated, rendering content");
   return <Outlet />;
 };
