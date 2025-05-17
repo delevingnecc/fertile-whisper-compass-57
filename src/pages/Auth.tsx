@@ -45,6 +45,7 @@ const Auth = () => {
   const [authLoading, setAuthLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [showTests, setShowTests] = useState(false);
+  const [redirectAttempted, setRedirectAttempted] = useState(false);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -63,17 +64,20 @@ const Auth = () => {
   });
 
   // Only redirect if the user is authenticated AND we're on the /auth page
+  // Use a useEffect with a flag to prevent infinite loops
   useEffect(() => {
-    if (!isLoading && user && location.pathname === '/auth') {
+    if (!isLoading && user && location.pathname === '/auth' && !redirectAttempted) {
       console.log('[Auth] User authenticated and on /auth page, redirecting to home');
+      setRedirectAttempted(true);
+      
       // Use a timeout to ensure auth state is stable before navigating
       const redirectTimeout = setTimeout(() => {
-        navigate('/');
+        navigate('/', { replace: true });
       }, 0);
       
       return () => clearTimeout(redirectTimeout);
     }
-  }, [user, isLoading, navigate, location.pathname]);
+  }, [user, isLoading, navigate, location.pathname, redirectAttempted]);
   
   const handleLogin = async (values: LoginFormValues) => {
     setAuthLoading(true);
@@ -96,9 +100,9 @@ const Auth = () => {
       
       // Redirect to onboarding if not complete, otherwise to home
       if (onboardingComplete) {
-        navigate("/");
+        navigate("/", { replace: true });
       } else {
-        navigate("/onboarding");
+        navigate("/onboarding", { replace: true });
       }
     } catch (error: any) {
       toast({
