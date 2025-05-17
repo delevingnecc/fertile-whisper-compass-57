@@ -13,14 +13,10 @@ export type MessageType = {
 type ChatMessageProps = {
   message: MessageType;
   assistantName: string;
-  userName?: string; // Optional user name prop
 };
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName, userName = '' }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName }) => {
   const isUser = message.sender === 'user';
-  
-  // Get first letter of user name or use 'U' as fallback
-  const userInitial = userName ? userName.charAt(0).toUpperCase() : 'U';
   
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
@@ -40,12 +36,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName, userN
       } chat-message-${isUser ? 'user' : 'ai'}`}>
         <div className="prose prose-sm max-w-none">
           {isUser ? (
-            <p className="text-white">{message.content}</p>
+            <p>{message.content}</p>
           ) : (
             <ReactMarkdown>{message.content}</ReactMarkdown>
           )}
         </div>
-        <div className={`text-xs text-right mt-1 ${isUser ? 'opacity-80 text-white' : 'opacity-70'}`}>
+        <div className="text-xs text-right mt-1 opacity-70">
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
@@ -55,7 +51,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName, userN
           <Avatar className="h-8 w-8">
             <AvatarImage src="/user-avatar.png" alt="User" />
             <AvatarFallback className="bg-accent text-accent-foreground">
-              {userInitial}
+              U
             </AvatarFallback>
           </Avatar>
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -191,7 +192,7 @@ const Home = () => {
       <Header title={`Chat with ${assistantName}`} />
 
       <div 
-        className={`flex-1 overflow-y-auto ${isMobile ? 'pt-20 pb-32' : 'pt-16 pb-28'} px-4 chat-gradient-bg scrollbar-hidden`}
+        className={`flex-1 overflow-y-auto ${isMobile ? 'pt-20 pb-28' : 'pt-16 pb-24'} px-4 chat-gradient-bg scrollbar-hidden`}
       >
         <div className="max-w-lg mx-auto">
           {messages.map((message) => (
@@ -199,7 +200,6 @@ const Home = () => {
               key={message.id}
               message={message}
               assistantName={assistantName}
-              userName={userName}
             />
           ))}
           {isLoading && (
@@ -213,7 +213,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className={`fixed ${isMobile ? 'bottom-20' : 'bottom-16'} left-0 right-0`}>
+      <div className={`fixed ${isMobile ? 'bottom-16' : 'bottom-14'} left-0 right-0`}>
         <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
 

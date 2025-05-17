@@ -77,7 +77,7 @@ const Products = () => {
           
           <div className="mb-6 overflow-x-auto scrollbar-hidden">
             <Tabs defaultValue="All">
-              <TabsList className="flex space-x-2 pb-2 overflow-x-auto">
+              <div className="flex space-x-2 pb-2">
                 {productCategories.map((category) => (
                   <TabsTrigger
                     key={category}
@@ -87,7 +87,7 @@ const Products = () => {
                     {category}
                   </TabsTrigger>
                 ))}
-              </TabsList>
+              </div>
               
               {productCategories.map((category) => (
                 <TabsContent key={category} value={category} className="mt-4">
