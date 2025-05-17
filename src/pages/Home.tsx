@@ -44,7 +44,7 @@ const Home = () => {
         if (profile) {
           setUserName(profile.name);
 
-          // Check if the user has seen the welcome screen
+          // Modified this section - Only check and store conversation if welcome screen has been dismissed
           const hasVisitedChat = localStorage.getItem('hasVisitedChat') === 'true';
           if (hasVisitedChat) {
             setShowWelcome(false);
@@ -65,16 +65,18 @@ const Home = () => {
           }
         } else if (isAnonymous) {
           // This shouldn't happen as we're creating profiles for anonymous users
-          // but just in case, create a new conversation
-          setShowWelcome(false);
-          await initializeNewConversation();
+          // but just in case, create a new conversation if welcome has been dismissed
+          if (localStorage.getItem('hasVisitedChat') === 'true') {
+            setShowWelcome(false);
+            await initializeNewConversation();
+          }
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
         
         // More graceful error handling - don't show error toast repeatedly
-        // Just try to initialize a conversation if we can
-        if (!conversationId) {
+        // Just try to initialize a conversation if we can and if welcome screen has been dismissed
+        if (!conversationId && localStorage.getItem('hasVisitedChat') === 'true') {
           setShowWelcome(false);
           initializeNewConversation().catch(err => {
             console.error('Failed to initialize conversation after profile fetch error:', err);
