@@ -35,7 +35,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, assistantName, userN
         </div>
       )}
       
-      <div className={`rounded-lg p-3 max-w-[80%] ${
+      <div className={`rounded-lg p-3 max-w-[95%] ${
         isUser ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
       } chat-message-${isUser ? 'user' : 'ai'}`}>
         <div className="prose prose-sm max-w-none">
