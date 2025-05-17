@@ -16,6 +16,7 @@ export type Database = {
           schema: string | null
           title: string | null
           url: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -23,6 +24,7 @@ export type Database = {
           schema?: string | null
           title?: string | null
           url?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -30,6 +32,7 @@ export type Database = {
           schema?: string | null
           title?: string | null
           url?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -65,18 +68,21 @@ export type Database = {
           embedding: string | null
           id: number
           metadata: Json | null
+          user_id: string | null
         }
         Insert: {
           content?: string | null
           embedding?: string | null
           id?: number
           metadata?: Json | null
+          user_id?: string | null
         }
         Update: {
           content?: string | null
           embedding?: string | null
           id?: number
           metadata?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -85,16 +91,19 @@ export type Database = {
           id: number
           message: Json
           session_id: string
+          user_id: string | null
         }
         Insert: {
           id?: number
           message: Json
           session_id: string
+          user_id?: string | null
         }
         Update: {
           id?: number
           message?: Json
           session_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

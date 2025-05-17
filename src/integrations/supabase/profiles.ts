@@ -15,6 +15,18 @@ export interface UserProfile {
  * Create a new user profile or update an existing one
  */
 export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'updated_at'>) {
+    // Ensure user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        throw new Error('User must be authenticated to update profile');
+    }
+
+    // Ensure profile ID matches authenticated user ID (for security)
+    // This is critical for RLS policies to work correctly
+    if (profile.id !== session.user.id) {
+        throw new Error('Profile ID must match authenticated user ID');
+    }
+
     // Convert Date object to ISO string if birthdate is a Date
     const birthdate = profile.birthdate instanceof Date 
         ? profile.birthdate.toISOString().split('T')[0] // Format as YYYY-MM-DD
@@ -33,6 +45,7 @@ export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'u
         });
 
     if (error) {
+        console.error('Error upserting profile:', error);
         throw error;
     }
 
@@ -43,6 +56,13 @@ export async function upsertProfile(profile: Omit<UserProfile, 'created_at' | 'u
  * Get a user profile by ID
  */
 export async function getProfile(userId: string): Promise<UserProfile | null> {
+    // Ensure we're requesting the current user's profile due to RLS
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || (userId !== session.user.id)) {
+        console.warn('Attempted to access profile that does not belong to the current user');
+        return null;
+    }
+
     const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -54,6 +74,7 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
             // PGRST116 = No rows returned, meaning no profile found
             return null;
         }
+        console.error('Error fetching profile:', error);
         throw error;
     }
 
@@ -77,12 +98,19 @@ export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
  * Mark a user's onboarding as complete
  */
 export async function completeOnboarding(userId: string): Promise<void> {
+    // Additional security check to ensure user can only update their own onboarding status
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || (userId !== session.user.id)) {
+        throw new Error('User can only update their own onboarding status');
+    }
+
     const { error } = await supabase
         .from('user_profiles')
         .update({ onboarding_completed: true })
         .eq('id', userId);
 
     if (error) {
+        console.error('Error completing onboarding:', error);
         throw error;
     }
-} 
+}
