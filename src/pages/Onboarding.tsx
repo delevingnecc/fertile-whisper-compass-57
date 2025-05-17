@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -179,6 +180,19 @@ const Onboarding = () => {
         console.log('[Onboarding] Component mounted. User:', user?.id);
     }, []);
 
+    // Update form values when selectedGoals changes
+    useEffect(() => {
+        // Update the form's goals field whenever selectedGoals changes
+        form.setValue('goals', selectedGoals);
+        
+        // If we're on step 4 and have goals selected, clear any existing error
+        if (step === 4 && selectedGoals.length > 0) {
+            form.clearErrors('goals');
+        }
+        
+        console.log('[DEBUG] Selected goals updated:', selectedGoals);
+    }, [selectedGoals, form, step]);
+
     // Fixed nextStep function that validates only the current step
     const nextStep = async () => {
         console.log(`[DEBUG] nextStep called for step ${step}`);
@@ -202,15 +216,17 @@ const Onboarding = () => {
             console.log(`[DEBUG] Gender validation result: ${isValid}`);
         }
         else if (step === 4) {
-            // For step 4, validate the goals field
-            form.setValue('goals', selectedGoals);
+            // For step 4, check if we have selected goals
             isValid = selectedGoals.length > 0;
-            console.log(`[DEBUG] Goals validation result: ${isValid}`);
+            console.log(`[DEBUG] Goals validation result: ${isValid}, selected goals: ${selectedGoals.length}`);
+            
             if (!isValid) {
                 form.setError('goals', {
                     type: 'manual',
                     message: 'Please select at least one goal'
                 });
+            } else {
+                form.clearErrors('goals');
             }
         }
         
@@ -244,11 +260,12 @@ const Onboarding = () => {
 
     const toggleGoalSelection = (goalId: string) => {
         setSelectedGoals(prev => {
-            if (prev.includes(goalId)) {
-                return prev.filter(id => id !== goalId);
-            } else {
-                return [...prev, goalId];
-            }
+            const newGoals = prev.includes(goalId) 
+                ? prev.filter(id => id !== goalId) 
+                : [...prev, goalId];
+            
+            console.log(`[DEBUG] Goal ${goalId} toggled. New selected goals:`, newGoals);
+            return newGoals;
         });
     };
 
