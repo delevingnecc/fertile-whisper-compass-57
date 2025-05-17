@@ -40,7 +40,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -61,27 +61,32 @@ const Auth = () => {
 
   // Check if user is already authenticated
   useEffect(() => {
+    console.log("Auth page: Checking authentication status");
+    
     const checkAuth = async () => {
       try {
+        setIsCheckingAuth(true);
         const { data: { user } } = await supabase.auth.getUser();
         console.log("Auth page: Current user:", user?.id || "none");
         
         if (user) {
-          setCurrentUser(user);
-          
           // User is authenticated, check if onboarding is complete
           const onboardingComplete = await hasCompletedOnboarding(user.id);
           console.log("Auth page: Onboarding complete:", onboardingComplete);
           
           // Redirect based on onboarding status
           if (onboardingComplete) {
+            console.log("Auth page: Redirecting to home page, onboarding complete");
             navigate("/", { replace: true });
           } else {
+            console.log("Auth page: Redirecting to onboarding page, onboarding incomplete");
             navigate("/onboarding", { replace: true });
           }
         }
       } catch (error) {
         console.error("Auth page: Error checking authentication status:", error);
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
     
@@ -105,16 +110,8 @@ const Auth = () => {
         description: "You've been logged in successfully."
       });
 
-      // Check if user has completed onboarding using Supabase
-      const onboardingComplete = await hasCompletedOnboarding(data.user.id);
-      console.log("Auth page: Onboarding complete:", onboardingComplete);
-
-      // Redirect to onboarding if not complete, otherwise to home
-      if (onboardingComplete) {
-        navigate("/", { replace: true });
-      } else {
-        navigate("/onboarding", { replace: true });
-      }
+      // After successful login, we let authentication state propagate
+      // The auth change will be picked up by onAuthStateChange and redirected appropriately
     } catch (error: any) {
       console.error("Auth page: Login error:", error);
       toast({
@@ -135,7 +132,7 @@ const Auth = () => {
       email: values.email,
       password: values.password,
       options: {
-        emailRedirectTo: window.location.origin
+        emailRedirectTo: window.location.origin + '/auth/callback'
       }
     }).then(({ data, error }) => {
       if (error) {
@@ -188,6 +185,14 @@ const Auth = () => {
       setSocialLoading(null);
     });
   };
+  
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50 px-4">
     <motion.div initial={{

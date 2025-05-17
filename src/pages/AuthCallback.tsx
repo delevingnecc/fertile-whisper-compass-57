@@ -8,40 +8,34 @@ import { supabase } from '@/integrations/supabase/client';
 const AuthCallback = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
-    const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(true);
 
     useEffect(() => {
         console.log("AuthCallback: Processing authentication callback");
         
-        // First, parse the hash from the URL if present (needed for some OAuth providers)
-        const handleHashParameters = async () => {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const accessToken = hashParams.get('access_token');
-            const refreshToken = hashParams.get('refresh_token');
-            
-            if (accessToken && refreshToken) {
-                console.log("AuthCallback: Found tokens in URL hash, setting session");
-                try {
-                    const { data, error } = await supabase.auth.setSession({
-                        access_token: accessToken,
-                        refresh_token: refreshToken
-                    });
-                    
-                    if (error) throw error;
-                    console.log("AuthCallback: Successfully set session from hash params");
-                } catch (error) {
-                    console.error("AuthCallback: Error setting session from hash params:", error);
-                }
-            }
-        };
-        
-        handleHashParameters();
-        
-        // Check if the user is authenticated
-        const handleRedirect = async () => {
-            setIsCheckingOnboarding(true);
+        const processAuthCallback = async () => {
             try {
-                // Get current user
+                // First, parse the hash from the URL if present (needed for some OAuth providers)
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token');
+                
+                if (accessToken && refreshToken) {
+                    console.log("AuthCallback: Found tokens in URL hash, setting session");
+                    try {
+                        const { data, error } = await supabase.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken
+                        });
+                        
+                        if (error) throw error;
+                        console.log("AuthCallback: Successfully set session from hash params");
+                    } catch (error) {
+                        console.error("AuthCallback: Error setting session from hash params:", error);
+                    }
+                }
+                
+                // Check if the user is authenticated
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 // Check if user is authenticated
@@ -78,11 +72,11 @@ const AuthCallback = () => {
                 });
                 navigate('/auth', { replace: true });
             } finally {
-                setIsCheckingOnboarding(false);
+                setIsProcessing(false);
             }
         };
 
-        handleRedirect();
+        processAuthCallback();
     }, [navigate, toast]);
 
     // Show loading spinner while processing

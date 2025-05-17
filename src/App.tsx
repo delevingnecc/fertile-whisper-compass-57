@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Community from "./pages/Community";
 import Clinician from "./pages/Clinician";
@@ -32,21 +32,19 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           
-          {/* Protected routes - wrapped in AuthProvider and ProtectedLayout */}
-          <Route path="/*" element={
-            <AuthProvider>
-              <Routes>
-                <Route path="/onboarding" element={<ProtectedLayout><Onboarding /></ProtectedLayout>} />
-                <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />
-                <Route path="/community" element={<ProtectedLayout><Community /></ProtectedLayout>} />
-                <Route path="/clinician" element={<ProtectedLayout><Clinician /></ProtectedLayout>} />
-                <Route path="/progress" element={<ProtectedLayout><Progress /></ProtectedLayout>} />
-                <Route path="/products" element={<ProtectedLayout><Products /></ProtectedLayout>} />
-                <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          } />
+          {/* Protected routes - wrapped in AuthProvider */}
+          <Route element={<AuthProvider><ProtectedLayout /></AuthProvider>}>
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/clinician" element={<Clinician />} />
+            <Route path="/progress" element={<Progress />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+
+          {/* Fallback route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
     </QueryClientProvider>

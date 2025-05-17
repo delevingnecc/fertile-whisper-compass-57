@@ -1,14 +1,10 @@
 
 import { ReactNode, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from "@/components/ui/use-toast";
 
-interface ProtectedLayoutProps {
-  children: ReactNode;
-}
-
-const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
+const ProtectedLayout = () => {
   const { user, userProfile, isLoading, isProfileLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,9 +26,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
 
     if (!user) {
       console.log("ProtectedLayout: No authenticated user, redirecting to /auth");
-      if (location.pathname !== '/auth' && location.pathname !== '/auth/callback') {
-        navigate('/auth', { replace: true });
-      }
+      navigate('/auth', { replace: true });
       return;
     }
 
@@ -67,7 +61,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
   }
 
   console.log("ProtectedLayout: Rendering children for path:", location.pathname);
-  return <>{children}</>;
+  return <Outlet />;
 };
 
 export default ProtectedLayout;
