@@ -121,7 +121,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 * **OpenAI**: For providing the GPT models that power our conversational AI companion.
 * **Lovable**: For the design mockups and UI/UX assets used throughout the app.
-* https://github.com/sngweizhi 
+* https://github.com/sngweizhi: For mobile app mockup development and AI Agent generation.
 
 
 ---
