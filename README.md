@@ -1,73 +1,129 @@
-# Welcome to your Lovable project GENESIS!
+# Genesis: Your Fertility Co-Pilot
 
-## Project info
+**Genesis** is a personalized, concierge-style fertility app that guides individuals and couples through their reproductive health journey. By integrating wearable biometrics, symptom logs, and AI-driven insights, Genesis empowers users to make informed decisions and take proactive steps toward their fertility goals.
 
-**URL**: https://lovable.dev/projects/7bff7c5d-f2ec-403b-bd36-6ca1936116d2
+---
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+* **Onboarding & Profiles**: Collect basic details (age, goals, health history) and user preferences.
+* **Wearable Integration**: Sync with Oura Ring, Apple Watch, Fitbit, Garmin, and more for continuous data.
+* **AI Chat Companion**: Interact with Eve/Adam for daily check-ins, mood logging, pain tracking, and personalized tips.
+* **Predictive Health Modeling**: Flag early signs of endometriosis, PCOS, hormone imbalances, and other conditions.
+* **Smart Dashboard**: Visualize cycle charts, HRV trends, skin temperature, and pain severity.
+* **Clinician Access**: Book 30-minute virtual consultations with vetted professionals.
+* **Community Forums**: Ask questions, share experiences anonymously or by profile, and join expert webinars.
+* **Product Recommendations**: Browse hormone-friendly supplements, skincare, and lifestyle tools.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7bff7c5d-f2ec-403b-bd36-6ca1936116d2) and start prompting.
+## 🏗️ Architecture & Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+* **Frontend**: React Native (iOS & Android), Tailwind CSS
+* **Backend**: Node.js, Express.js
+* **Database**: PostgreSQL
+* **AI & ML**: OpenAI GPT for conversational agent, scikit-learn & TensorFlow for predictive models
+* **Wearable SDKs**: Oura Cloud API, Apple HealthKit, Fitbit Web API
+* **Hosting**: AWS (EC2, RDS, S3)
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ⚙️ Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. **Clone the repository**:
 
-Follow these steps:
+   ```bash
+   git clone https://github.com/your-org/genesis-fertility-app.git
+   cd genesis-fertility-app
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. **Install dependencies**:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+   * **Backend**:
 
-# Step 3: Install the necessary dependencies.
-npm i
+     ```bash
+     cd server
+     npm install
+     ```
+   * **Frontend**:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+     ```bash
+     cd ../mobile
+     npm install
+     ```
 
-**Edit a file directly in GitHub**
+3. **Configure environment variables**:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+   * Copy the example file and fill in your keys:
 
-**Use GitHub Codespaces**
+     ```bash
+     cp server/.env.example server/.env
+     cp mobile/.env.example mobile/.env
+     ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+4. **Run the application**:
 
-## What technologies are used for this project?
+   * **Backend**:
 
-This project is built with:
+     ```bash
+     cd server
+     npm run dev
+     ```
+   * **Frontend** (iOS):
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+     ```bash
+     cd ../mobile
+     npx react-native run-ios
+     ```
+   * **Frontend** (Android):
 
-## How can I deploy this project?
+     ```bash
+     npx react-native run-android
+     ```
 
-Simply open [Lovable](https://lovable.dev/projects/7bff7c5d-f2ec-403b-bd36-6ca1936116d2) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+- Website for subscriber demo https://kzmqe3s89xdww2w600oh.lite.vusercontent.net/ 
+---
 
-Yes, you can!
+## 📱 Usage
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. Open the Genesis mobile app.
+2. Complete the onboarding flow with your details and goals.
+3. Sync your wearable device for real-time data.
+4. Interact with Eve/Adam in the chat for daily check-ins.
+5. Explore the Dashboard, Community, Clinician Access, and Products tabs.
+6. Track your progress and receive actionable insights.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/YourFeature`.
+3. Commit your changes: `git commit -m "Add YourFeature"`.
+4. Push to the branch: `git push origin feature/YourFeature`.
+5. Open a Pull Request describing your changes.
+
+Please ensure all code follows our linting and testing standards.
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Credits
+
+* **OpenAI**: For providing the GPT models that power our conversational AI companion.
+* **Lovable**: For the design mockups and UI/UX assets used throughout the app.
+* https://github.com/sngweizhi 
+
+
+---
+
+*Genesis: Navigating your fertility journey with confidence.*
